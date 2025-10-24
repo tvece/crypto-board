@@ -9,7 +9,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import "./App.css";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 //TODO: fix sort icon jumping to next row
 type Coin = {
@@ -35,6 +35,9 @@ function App() {
 
   const [sorting, setSorting] = useState<SortingState>([{ id: "market_cap_rank", desc: false }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const [isFiltered, setIsFiltered] = useState(false);
+  const inputFilterRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100")
@@ -75,9 +78,19 @@ function App() {
     onSortingChange: setSorting,
   });
 
-  const handleFilter = async (event: React.FormEvent<FilterFormElement>) => {
+  const handleFilter = (event: React.FormEvent<FilterFormElement>) => {
     event.preventDefault();
-    setColumnFilters([{ id: "name", value: event.currentTarget.elements.filter.value }]);
+    const filterValue = event.currentTarget.elements.filter.value;
+    setColumnFilters([{ id: "name", value: filterValue }]);
+    setIsFiltered(filterValue.length != 0);
+  };
+
+  const clearFilter = () => {
+    if (inputFilterRef.current) {
+      inputFilterRef.current.value = "";
+    }
+    setColumnFilters([]);
+    setIsFiltered(false);
   };
 
   if (failedToLoad) {
@@ -92,7 +105,14 @@ function App() {
         <tr>
           <td colSpan={table.getHeaderGroups()[0].headers.length}>
             <form onSubmit={handleFilter} autoComplete="off">
-              <input id="filter" type="text" autoComplete="off"></input>
+              <input id="filter" type="text" autoComplete="off" ref={inputFilterRef}></input>
+              {isFiltered ? (
+                <button onClick={clearFilter} type="button">
+                  Clear
+                </button>
+              ) : (
+                <></>
+              )}
               <button type="submit">Filter</button>
             </form>
           </td>
