@@ -1,4 +1,4 @@
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 import "./App.css";
 import React, { useEffect, useState } from "react";
 
@@ -43,6 +43,8 @@ function App() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
+    getSortedRowModel: getSortedRowModel(),
+    enableMultiSort: false,
   });
 
   if (failedToLoad) {
@@ -54,10 +56,24 @@ function App() {
   return (
     <table>
       <thead>
+        <tr>
+          <td colSpan={table.getHeaderGroups()[0].headers.length}>FILTER PLACEHOLDER</td>
+        </tr>
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
-              <th key={header.id}>{flexRender(header.column.columnDef.header, header.getContext())}</th>
+              //TODO: move style to css
+              <th key={header.id} onClick={header.column.getToggleSortingHandler()} style={{ cursor: "pointer" }}>
+                {flexRender(header.column.columnDef.header, header.getContext())}
+                {header.column.getIsSorted() === "asc" ? (
+                  " 🔼"
+                ) : header.column.getIsSorted() === "desc" ? (
+                  " 🔽"
+                ) : (
+                  /* opacity 0 to prevent sort icon increasing column width */
+                  <span style={{ opacity: 0 }}> 🔼</span>
+                )}
+              </th>
             ))}
           </tr>
         ))}
