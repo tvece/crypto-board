@@ -4,16 +4,18 @@ import React, { useEffect, useState } from "react";
 
 type Coin = {
   id: string;
+  market_cap_rank: number;
   name: string;
   symbol: string;
   current_price: number;
+  price_change_percentage_24h: number;
 };
 
 function App() {
   const [data, setData] = useState([]);
   const [populated, setPopulated] = useState(false);
   useEffect(() => {
-    fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1")
+    fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100")
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -24,9 +26,11 @@ function App() {
 
   const columns = React.useMemo<ColumnDef<Coin>[]>(
     () => [
-      { header: "Name", accessorKey: "name" },
-      { header: "Symbol", accessorKey: "symbol" },
-      { header: "Price", accessorKey: "current_price" },
+      { header: "Rank", accessorKey: "market_cap_rank" },
+      { header: "Zkratka", accessorKey: "symbol" },
+      { header: "Název", accessorKey: "name" },
+      { header: "Cena", accessorKey: "current_price" },
+      { header: "Změna 24h", accessorKey: "price_change_percentage_24h" },
     ],
     []
   );
@@ -34,6 +38,7 @@ function App() {
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.id,
   });
 
   if (!populated) {
