@@ -14,6 +14,7 @@ type Coin = {
 function App() {
   const [data, setData] = useState([]);
   const [populated, setPopulated] = useState(false);
+  const [failedToLoad, setFailedToLoad] = useState(false);
   useEffect(() => {
     fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100")
       .then((res) => res.json())
@@ -21,7 +22,10 @@ function App() {
         setData(data);
         setPopulated(true);
       })
-      .catch(console.error);
+      .catch((error) => {
+        setFailedToLoad(true);
+        console.error(error);
+      });
   }, []);
 
   const columns = React.useMemo<ColumnDef<Coin>[]>(
@@ -42,7 +46,10 @@ function App() {
   });
 
   if (!populated) {
-    return <div>Loading...</div>;
+    return <div>Načítání...</div>;
+  }
+  if (failedToLoad) {
+    return <div>Načítání vstupních dat selhalo!</div>;
   }
   return (
     <table>
