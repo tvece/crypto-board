@@ -45,11 +45,11 @@ function App() {
     getRowId: (row) => row.id,
   });
 
-  if (!populated) {
-    return <div>Načítání...</div>;
-  }
   if (failedToLoad) {
     return <div>Načítání vstupních dat selhalo!</div>;
+  }
+  if (!populated) {
+    return <div>Načítání...</div>;
   }
   return (
     <table>
