@@ -6,6 +6,7 @@ import {
   useReactTable,
   type ColumnDef,
   type ColumnFiltersState,
+  type SortingState,
 } from "@tanstack/react-table";
 import "./App.css";
 import React, { useEffect, useState } from "react";
@@ -32,6 +33,7 @@ function App() {
   const [populated, setPopulated] = useState(false);
   const [failedToLoad, setFailedToLoad] = useState(false);
 
+  const [sorting, setSorting] = useState<SortingState>([{ id: "market_cap_rank", desc: false }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   useEffect(() => {
@@ -66,9 +68,11 @@ function App() {
     enableMultiSort: false,
     getFilteredRowModel: getFilteredRowModel(),
     state: {
+      sorting,
       columnFilters,
     },
     onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
   });
 
   const handleFilter = async (event: React.FormEvent<FilterFormElement>) => {
