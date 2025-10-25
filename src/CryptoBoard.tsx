@@ -55,11 +55,11 @@ function CryptoBoard() {
 
   const columns = React.useMemo<ColumnDef<Coin>[]>(
     () => [
-      { header: "Rank", accessorKey: "market_cap_rank" },
-      { header: "Zkratka", accessorKey: "symbol" },
-      { header: "Název", accessorKey: "name", filterFn: "includesString" },
-      { header: "Cena", accessorKey: "current_price" },
-      { header: "Změna 24h", accessorKey: "price_change_percentage_24h" },
+      { header: "RANK", accessorKey: "market_cap_rank" },
+      { header: "ZKRATKA", accessorKey: "symbol" },
+      { header: "NÁZEV", accessorKey: "name", filterFn: "includesString" },
+      { header: "CENA", accessorKey: "current_price" },
+      { header: "ZMĚNA 24h", accessorKey: "price_change_percentage_24h" },
     ],
     []
   );
@@ -102,7 +102,7 @@ function CryptoBoard() {
     <table className="cb">
       <thead>
         <tr>
-          <td colSpan={table.getHeaderGroups()[0].headers.length}>
+          <td colSpan={table.getHeaderGroups()[0].headers.length} className="cb-search-form-wrapper">
             <form onSubmit={handleFilter} autoComplete="off" className="cb-search-form">
               <input
                 id="filter"
@@ -113,33 +113,33 @@ function CryptoBoard() {
               ></input>
               {isFiltered ? (
                 <button className="cb-search-button" title="Zrušit hledání" onClick={clearFilter}>
-                  <CrossIcon className="gray-color" />
+                  <CrossIcon className="cb-search-icon" />
                 </button>
               ) : (
                 <></>
               )}
               <button className="cb-search-button" title="Vyhledat" type="submit">
-                <SearchIcon className="gray-color"></SearchIcon>
+                <SearchIcon className="cb-search-icon"></SearchIcon>
               </button>
             </form>
           </td>
         </tr>
         {table.getHeaderGroups().map((headerGroup) => (
-          <tr key={headerGroup.id}>
+          <tr className="cb-header" key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
-              <th key={header.id} onClick={header.column.getToggleSortingHandler()} className="cb-header">
-                <span className="cb-header-content">
-                  <span className="cb-header-text">
+              <th key={header.id} onClick={header.column.getToggleSortingHandler()} className="cb-header-cell">
+                <span className="cb-header-cell-content">
+                  <span className="cb-header-cell-text">
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </span>
 
                   {header.column.getIsSorted() === "asc" ? (
-                    <span className="cb-header-icon">&nbsp;🔼</span>
+                    <span className="cb-header-cell-icon">&nbsp;🔼</span>
                   ) : header.column.getIsSorted() === "desc" ? (
-                    <span className="cb-header-icon">&nbsp;🔽</span>
+                    <span className="cb-header-cell-icon">&nbsp;🔽</span>
                   ) : (
                     /* invisible span to prevent sort icon increasing column width */
-                    <span className="cb-header-icon invisible">&nbsp;🔼</span>
+                    <span className="cb-header-cell-icon invisible">&nbsp;🔼</span>
                   )}
                 </span>
               </th>
@@ -147,11 +147,13 @@ function CryptoBoard() {
           </tr>
         ))}
       </thead>
-      <tbody>
+      <tbody className="cb-body">
         {table.getRowModel().rows.map((row) => (
           <tr key={row.id}>
             {row.getVisibleCells().map((cell) => (
-              <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+              <td key={cell.id} data-column-id={cell.column.id}>
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </td>
             ))}
           </tr>
         ))}
