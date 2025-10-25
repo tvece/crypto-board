@@ -1,13 +1,13 @@
 .cb {
-  --cb-background: #0f172ae0;
-  --cb-border-color: #94a3b842;
+  --cb-background: #0f172a;
+  --cb-border-color: #5a626d;
   --cb-input-focused: #60a5fa;
-  --cb-muted: #e2e8f0b8;
+  --cb-muted: #a6acb3;
   --cb-text: #f8fafc;
   --cb-letter-spacing-wide: 0.2em;
   --cb-icon-color: var(--cb-muted);
-  --cb-cell-background: #0f172ab8;
-  --cb-cell-background-light: #60a5fa24;
+  --cb-cell-background: #0f172a;
+  --cb-cell-background-light: #1e2f55;
   --cb-cell-background-dark: black;
   --cb-table-radius: 20px;
   border-spacing: 0;
@@ -18,12 +18,12 @@
   background: var(--cb-background);
   border: 1px solid var(--cb-border-color);
   box-shadow: 0 0px 3px var(--cb-muted);
-  border-radius: 20px;
+  border-radius: var(--cb-table-radius);
 }
 
 .cb-search-form-wrapper {
   padding: 1.5em;
-  background: linear-gradient(135deg, #60a5fa33, #3b82f61f);
+  background: var(--cb-cell-background-dark);
   border-radius: var(--cb-table-radius) var(--cb-table-radius) 0 0;
 }
 
@@ -31,7 +31,7 @@
   display: flex;
   border: 1px solid var(--cb-muted);
   padding: 0.5em;
-  border-radius: 20px;
+  border-radius: var(--cb-table-radius);
   background: var(--cb-cell-background);
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
