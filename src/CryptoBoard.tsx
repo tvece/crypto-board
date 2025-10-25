@@ -12,15 +12,20 @@ import "./CryptoBoard.css";
 import React, { useEffect, useRef, useState } from "react";
 import CrossIcon from "./icons/cross.svg?react";
 import SearchIcon from "./icons/search.svg?react";
+import { z } from "zod";
 
-type Coin = {
-  id: string;
-  market_cap_rank: number;
-  name: string;
-  symbol: string;
-  current_price: number;
-  price_change_percentage_24h: number;
-};
+const CoinSchema = z.object({
+  id: z.string(),
+  market_cap_rank: z.number(),
+  name: z.string(),
+  symbol: z.string(),
+  current_price: z.number(),
+  price_change_percentage_24h: z.number(),
+});
+
+type Coin = z.infer<typeof CoinSchema>;
+
+const CoinsSchema = CoinSchema.array();
 
 interface FilterFormControlsCollection extends HTMLFormControlsCollection {
   filter: HTMLInputElement;
@@ -30,7 +35,7 @@ interface FilterFormElement extends HTMLFormElement {
 }
 
 function CryptoBoard() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<Coin[]>([]);
   const [populated, setPopulated] = useState(false);
   const [failedToLoad, setFailedToLoad] = useState(false);
 
@@ -43,9 +48,12 @@ function CryptoBoard() {
     fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100")
       .then((res) => res.json())
       .then((data) => {
+        const coins = CoinsSchema.parse(data);
         setData(data);
         setPopulated(true);
-        console.log(data);
+        coins.forEach((coin) => {
+          console.log(coin);
+        });
       })
       .catch((error) => {
         setFailedToLoad(true);
