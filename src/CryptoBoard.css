@@ -39,6 +39,9 @@
   border-radius: var(--cb-table-radius);
   background: var(--cb-cell-background);
   transition: border-color 200ms ease, box-shadow 200ms ease;
+  max-width: 80vw;
+  position: sticky;
+  left: 10vw;
 }
 
 .cb-search-form:hover,
