@@ -6,12 +6,10 @@ import {
   useReactTable,
   type ColumnDef,
   type ColumnFiltersState,
-  type SortingState,
 } from "@tanstack/react-table";
 import "./CryptoBoard.css";
 import React, { useEffect, useRef, useState } from "react";
 
-//TODO: fix sort icon jumping to next row
 type Coin = {
   id: string;
   market_cap_rank: number;
@@ -33,7 +31,6 @@ function App() {
   const [populated, setPopulated] = useState(false);
   const [failedToLoad, setFailedToLoad] = useState(false);
 
-  const [sorting, setSorting] = useState<SortingState>([{ id: "market_cap_rank", desc: false }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const [isFiltered, setIsFiltered] = useState(false);
@@ -71,11 +68,9 @@ function App() {
     enableMultiSort: false,
     getFilteredRowModel: getFilteredRowModel(),
     state: {
-      sorting,
       columnFilters,
     },
     onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
   });
 
   const handleFilter = (event: React.FormEvent<FilterFormElement>) => {
@@ -120,17 +115,21 @@ function App() {
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
-              //TODO: move style to css
-              <th key={header.id} onClick={header.column.getToggleSortingHandler()} style={{ cursor: "pointer" }}>
-                {flexRender(header.column.columnDef.header, header.getContext())}
-                {header.column.getIsSorted() === "asc" ? (
-                  " 🔼"
-                ) : header.column.getIsSorted() === "desc" ? (
-                  " 🔽"
-                ) : (
-                  /* opacity 0 to prevent sort icon increasing column width */
-                  <span style={{ opacity: 0 }}> 🔼</span>
-                )}
+              <th key={header.id} onClick={header.column.getToggleSortingHandler()} className="cb-header">
+                <span className="cb-header-content">
+                  <span className="cb-header-text">
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </span>
+
+                  {header.column.getIsSorted() === "asc" ? (
+                    <span className="cb-header-icon">&nbsp;🔼</span>
+                  ) : header.column.getIsSorted() === "desc" ? (
+                    <span className="cb-header-icon">&nbsp;🔽</span>
+                  ) : (
+                    /* invisible span to prevent sort icon increasing column width */
+                    <span className="cb-header-icon invisible">&nbsp;🔼</span>
+                  )}
+                </span>
               </th>
             ))}
           </tr>

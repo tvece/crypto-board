@@ -1,2 +1,16 @@
-#root {
+.cb-header {
+  cursor: pointer;
+}
+.cb-header-content {
+  display: flex;
+}
+
+.cb-header-text {
+  text-align: left;
+  flex: 1;
+  white-space: nowrap;
+}
+
+.cb-header-icon.invisible {
+  opacity: 0;
 }
