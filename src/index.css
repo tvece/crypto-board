@@ -15,4 +15,5 @@ body {
 #root {
   display: flex;
   justify-content: center;
+  min-width: fit-content; /* min-width to fix zoom issue (parts of the table can't be scrolled into) */
 }
