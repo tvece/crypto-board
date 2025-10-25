@@ -8,7 +8,7 @@ import {
   type ColumnFiltersState,
   type SortingState,
 } from "@tanstack/react-table";
-import "./App.css";
+import "./CryptoBoard.css";
 import React, { useEffect, useRef, useState } from "react";
 
 //TODO: fix sort icon jumping to next row
