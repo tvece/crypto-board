@@ -1,3 +1,4 @@
+/// <reference types="vite-plugin-svgr/client" />
 import {
   flexRender,
   getCoreRowModel,
@@ -9,6 +10,8 @@ import {
 } from "@tanstack/react-table";
 import "./CryptoBoard.css";
 import React, { useEffect, useRef, useState } from "react";
+import CrossIcon from "./icons/cross.svg?react";
+import SearchIcon from "./icons/search.svg?react";
 
 type Coin = {
   id: string;
@@ -26,7 +29,7 @@ interface FilterFormElement extends HTMLFormElement {
   readonly elements: FilterFormControlsCollection;
 }
 
-function App() {
+function CryptoBoard() {
   const [data, setData] = useState([]);
   const [populated, setPopulated] = useState(false);
   const [failedToLoad, setFailedToLoad] = useState(false);
@@ -42,6 +45,7 @@ function App() {
       .then((data) => {
         setData(data);
         setPopulated(true);
+        console.log(data);
       })
       .catch((error) => {
         setFailedToLoad(true);
@@ -95,20 +99,28 @@ function App() {
     return <div>Načítání...</div>;
   }
   return (
-    <table>
+    <table className="cb">
       <thead>
         <tr>
           <td colSpan={table.getHeaderGroups()[0].headers.length}>
-            <form onSubmit={handleFilter} autoComplete="off">
-              <input id="filter" type="text" autoComplete="off" ref={inputFilterRef}></input>
+            <form onSubmit={handleFilter} autoComplete="off" className="cb-search-form">
+              <input
+                id="filter"
+                type="text"
+                autoComplete="off"
+                className="cb-search-input"
+                ref={inputFilterRef}
+              ></input>
               {isFiltered ? (
-                <button onClick={clearFilter} type="button">
-                  Clear
+                <button className="cb-search-button" title="Zrušit hledání" onClick={clearFilter}>
+                  <CrossIcon className="gray-color" />
                 </button>
               ) : (
                 <></>
               )}
-              <button type="submit">Filter</button>
+              <button className="cb-search-button" title="Vyhledat" type="submit">
+                <SearchIcon className="gray-color"></SearchIcon>
+              </button>
             </form>
           </td>
         </tr>
@@ -148,4 +160,4 @@ function App() {
   );
 }
 
-export default App;
+export default CryptoBoard;

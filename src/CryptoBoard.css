@@ -1,3 +1,40 @@
+.cb {
+  --cb-grey: grey;
+}
+
+.cb {
+  max-width: 850px;
+}
+
+.cb-search-form {
+  display: flex;
+  border: 1px solid grey;
+  border-radius: 8px;
+  padding: 5px;
+}
+
+.cb-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+}
+
+.cb-search-button {
+  width: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2px; /* space for focus ring (keyboard focus) */
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.cb-search-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .cb-header {
   cursor: pointer;
 }
@@ -13,4 +50,8 @@
 
 .cb-header-icon.invisible {
   opacity: 0;
+}
+
+.gray-color {
+  color: var(--cb-grey);
 }
