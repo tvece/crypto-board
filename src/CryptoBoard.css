@@ -97,6 +97,10 @@
   white-space: nowrap;
 }
 
+.cb-header-cell-icon {
+  color: var(--cb-text);
+}
+
 .cb-header-cell-icon.invisible {
   opacity: 0;
 }
