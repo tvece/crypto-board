@@ -12,7 +12,8 @@
   --cb-table-radius: 20px;
   border-spacing: 0;
   margin: 1em;
-  width: 1200px;
+  width: 90%;
+  max-width: 1200px;
   color: var(--cb-text);
   background: var(--cb-background);
   border: 1px solid var(--cb-border-color);
@@ -111,6 +112,7 @@
   color: var(--cb-text);
   background: var(--cb-cell-background);
   transition: background-color 400ms ease;
+  white-space: nowrap;
 }
 
 .cb-body tr:hover td {
@@ -142,4 +144,8 @@ td[data-column-id="market_cap_rank"] {
 td[data-column-id="symbol"] {
   text-transform: uppercase;
   letter-spacing: var(--cb-letter-spacing-wide);
+}
+
+td[data-column-id="name"] {
+  width: 100%;
 }
