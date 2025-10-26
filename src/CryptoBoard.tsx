@@ -85,10 +85,6 @@ function CryptoBoard() {
         setCoins(initialCoins);
         setPopulated(true);
 
-        initialCoins.forEach((coin) => {
-          console.debug(coin);
-        });
-
         const monitoredCoins = [];
         for (const initialCoin of initialCoins) {
           /* coins with price exactly 1 will most likely not change */
