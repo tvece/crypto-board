@@ -14,6 +14,9 @@ import CrossIcon from "./icons/cross.svg?react";
 import SearchIcon from "./icons/search.svg?react";
 import { z } from "zod";
 
+/**
+ * zod schema for coin returned from the initial fetch
+ */
 const CoinSchema = z.object({
   id: z.string(),
   market_cap_rank: z.number(),
@@ -23,9 +26,26 @@ const CoinSchema = z.object({
   price_change_percentage_24h: z.number(),
 });
 
+const CoinsSchema = CoinSchema.array();
+
+/**
+ * coin returned from the initial fetch
+ */
 type Coin = z.infer<typeof CoinSchema>;
 
-const CoinsSchema = CoinSchema.array();
+/**
+ * zod schema for coin returned from WebSocket
+ */
+const WSCoinSchema = z.object({
+  /**
+   * symbol
+   */
+  s: z.string(),
+  /**
+   * last price
+   */
+  c: z.coerce.number(),
+});
 
 interface FilterFormControlsCollection extends HTMLFormControlsCollection {
   filter: HTMLInputElement;
@@ -33,9 +53,17 @@ interface FilterFormControlsCollection extends HTMLFormControlsCollection {
 interface FilterFormElement extends HTMLFormElement {
   readonly elements: FilterFormControlsCollection;
 }
+/**
+ * how many coins to monitor
+ */
+const MONITORED_COINS_COUNT = 5;
+/**
+ * Minimum interval in milliseconds between two updates of the same coin.
+ */
+const COIN_UPDATE_THROTTLE = 30000;
 
 function CryptoBoard() {
-  const [data, setData] = useState<Coin[]>([]);
+  const [coins, setCoins] = useState<Coin[]>([]);
   const [populated, setPopulated] = useState(false);
   const [failedToLoad, setFailedToLoad] = useState(false);
 
@@ -45,20 +73,78 @@ function CryptoBoard() {
   const inputFilterRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100")
+    const controller = new AbortController();
+    let socket: WebSocket | null = null;
+    fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100", {
+      signal: controller.signal,
+    })
       .then((res) => res.json())
-      .then((data) => {
-        const coins = CoinsSchema.parse(data);
-        setData(data);
+      .then((jsonData) => {
+        const initialCoins = CoinsSchema.parse(jsonData);
+        setCoins(initialCoins);
         setPopulated(true);
-        coins.forEach((coin) => {
-          console.log(coin);
+
+        initialCoins.forEach((coin) => {
+          console.debug(coin);
         });
+
+        const monitoredCoins = [];
+        for (const initialCoin of initialCoins) {
+          /* coins with price exactly 1 will most likely not change */
+          if (initialCoin.current_price !== 1) {
+            monitoredCoins.push(initialCoin);
+          }
+          if (monitoredCoins.length === MONITORED_COINS_COUNT) break;
+        }
+        if (monitoredCoins.length !== MONITORED_COINS_COUNT) {
+          throw new Error(
+            `Initial fetch does not contain at least ${MONITORED_COINS_COUNT} coins that can be monitored`
+          );
+        }
+
+        console.debug(`Monitored coins: ${monitoredCoins.map((coin) => coin.symbol)}`);
+
+        const lastUpdates = new Map();
+        monitoredCoins.forEach((monitoredCoin) => lastUpdates.set(monitoredCoin.symbol, 0));
+
+        const streams = monitoredCoins.map((coin) => `${coin.symbol}usdt@ticker`).join("/");
+        socket = new WebSocket(`wss://fstream.binance.com/ws/stream?streams=${streams}`);
+
+        socket.onopen = () => console.log("✅ WebSocket connection established");
+        socket.onmessage = (event) => {
+          const now = Date.now();
+          const eventData = JSON.parse(event.data);
+          const wsCoin = WSCoinSchema.parse(eventData);
+          const symbol = wsCoin.s.substring(0, wsCoin.s.length - "usdt".length).toLocaleLowerCase();
+          if (now - lastUpdates.get(symbol) > COIN_UPDATE_THROTTLE) {
+            console.debug(`${new Date().toLocaleString()}   ${symbol} -> ${wsCoin.c}`);
+            setCoins((prev) =>
+              prev.map((coin: Coin) => (coin.symbol === symbol ? { ...coin, current_price: wsCoin.c } : coin))
+            );
+            lastUpdates.set(symbol, now);
+          }
+        };
+        socket.onerror = (err) => {
+          console.error("❌ WebSocket error:", err);
+        };
+        socket.onclose = (event) => {
+          console.warn("⚠️ WebSocket closed:", event.reason);
+        };
       })
       .catch((error) => {
+        //TODO split catch of initial data fetch and websocket logic
+        if (controller.signal.aborted) {
+          return; // StrictMode cleanup; not a real failure
+        }
         setFailedToLoad(true);
         console.error(error);
       });
+    return () => {
+      controller.abort("cleanup before next effect run");
+      if (socket && socket.readyState < WebSocket.CLOSING) {
+        socket.close(1000, "cleanup before next effect run");
+      }
+    };
   }, []);
 
   const columns = React.useMemo<ColumnDef<Coin>[]>(
@@ -72,7 +158,7 @@ function CryptoBoard() {
     []
   );
   const table = useReactTable({
-    data,
+    data: coins,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
@@ -101,7 +187,7 @@ function CryptoBoard() {
   };
 
   if (failedToLoad) {
-    return <div>Načítání vstupních dat selhalo!</div>;
+    return <div>Načítání dat selhalo!</div>;
   }
   if (!populated) {
     return <div>Načítání...</div>;
@@ -120,7 +206,7 @@ function CryptoBoard() {
                 ref={inputFilterRef}
               ></input>
               {isFiltered ? (
-                <button className="cb-search-button" title="Zrušit hledání" onClick={clearFilter}>
+                <button type="button" className="cb-search-button" title="Zrušit hledání" onClick={clearFilter}>
                   <CrossIcon className="cb-search-icon" />
                 </button>
               ) : (
