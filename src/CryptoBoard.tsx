@@ -104,8 +104,8 @@ function CryptoBoard() {
 
         console.debug(`Monitored coins: ${monitoredCoins.map((coin) => coin.symbol)}`);
 
-        const lastUpdates = new Map();
-        monitoredCoins.forEach((monitoredCoin) => lastUpdates.set(monitoredCoin.symbol, 0));
+        const lastUpdates: Record<string, number> = {};
+        monitoredCoins.forEach((monitoredCoin) => (lastUpdates[monitoredCoin.symbol] = 0));
 
         const streams = monitoredCoins.map((coin) => `${coin.symbol}usdt@ticker`).join("/");
         socket = new WebSocket(`wss://fstream.binance.com/ws/stream?streams=${streams}`);
@@ -116,12 +116,12 @@ function CryptoBoard() {
           const eventData = JSON.parse(event.data);
           const wsCoin = WSCoinSchema.parse(eventData);
           const symbol = wsCoin.s.substring(0, wsCoin.s.length - "usdt".length).toLocaleLowerCase();
-          if (now - lastUpdates.get(symbol) > COIN_UPDATE_THROTTLE) {
+          if (now - lastUpdates[symbol] > COIN_UPDATE_THROTTLE) {
             console.debug(`${new Date().toLocaleString()}   ${symbol} -> ${wsCoin.c}`);
             setCoins((prev) =>
               prev.map((coin: Coin) => (coin.symbol === symbol ? { ...coin, current_price: wsCoin.c } : coin))
             );
-            lastUpdates.set(symbol, now);
+            lastUpdates[symbol] = now;
           }
         };
         socket.onerror = (err) => {
