@@ -118,7 +118,6 @@ function CryptoBoard() {
           const wsCoin = WSCoinSchema.parse(eventData);
           const symbol = wsCoin.s.substring(0, wsCoin.s.length - "usdt".length).toLocaleLowerCase();
           if (now - lastUpdates[symbol] > COIN_UPDATE_THROTTLE) {
-            console.debug(`${new Date().toLocaleString()}   ${symbol} -> ${wsCoin.c}`);
             setCoins((prev) =>
               prev.map((coin: Coin) =>
                 coin.symbol === symbol ? { ...coin, current_price: wsCoin.c, previous_price: coin.current_price } : coin
@@ -195,11 +194,13 @@ function CryptoBoard() {
   if (!populated) {
     return <div>Načítání...</div>;
   }
+  const headerGroup = table.getHeaderGroups()[0];
+  const rows = table.getRowModel().rows;
   return (
     <table className="cb">
       <thead>
         <tr>
-          <td colSpan={table.getHeaderGroups()[0].headers.length} className="cb-search-form-wrapper">
+          <td colSpan={headerGroup.headers.length} className="cb-search-form-wrapper">
             <form onSubmit={handleFilter} autoComplete="off" className="cb-search-form">
               <input
                 id="filter"
@@ -221,7 +222,7 @@ function CryptoBoard() {
             </form>
           </td>
         </tr>
-        {table.getHeaderGroups().map((headerGroup) => (
+        {
           <tr className="cb-header" key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
               <th key={header.id} onClick={header.column.getToggleSortingHandler()} className="cb-header-cell">
@@ -242,12 +243,21 @@ function CryptoBoard() {
               </th>
             ))}
           </tr>
-        ))}
+        }
       </thead>
       <tbody className="cb-body">
-        {table.getRowModel().rows.map((row) => (
-          <CoinRow key={row.id} row={row}></CoinRow>
-        ))}
+        {rows.length === 0 ? (
+          <tr>
+            <td className="no-results" colSpan={headerGroup.headers.length}>
+              {
+                /* isFiltered does not have to be checked (if the initial data is empty failedToLoad is set)*/
+                "Žádné výsledky. Zkuste upravit hledaný výraz."
+              }
+            </td>
+          </tr>
+        ) : (
+          rows.map((row) => <CoinRow key={row.id} row={row} />)
+        )}
       </tbody>
     </table>
   );

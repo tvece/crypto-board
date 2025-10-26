@@ -140,6 +140,11 @@
   border-radius: 0 0 var(--cb-table-radius) 0;
 }
 
+.cb-body tr:last-child .no-results:first-child {
+  border-radius: 0 0 var(--cb-table-radius) var(--cb-table-radius);
+  text-align: center;
+}
+
 td[data-column-id="symbol"],
 td[data-column-id="market_cap_rank"],
 td[data-column-id="price_change_percentage_24h"] {
