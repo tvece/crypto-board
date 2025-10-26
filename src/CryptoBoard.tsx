@@ -111,7 +111,7 @@ function CryptoBoard() {
         const streams = monitoredCoins.map((coin) => `${coin.symbol}usdt@ticker`).join("/");
         socket = new WebSocket(`wss://fstream.binance.com/ws/stream?streams=${streams}`);
 
-        socket.onopen = () => console.log("✅ WebSocket connection established");
+        socket.onopen = () => console.log("WebSocket connection established");
         socket.onmessage = (event) => {
           const now = Date.now();
           const eventData = JSON.parse(event.data);
@@ -127,10 +127,10 @@ function CryptoBoard() {
           }
         };
         socket.onerror = (err) => {
-          console.error("❌ WebSocket error:", err);
+          console.error("WebSocket error:", err);
         };
         socket.onclose = (event) => {
-          console.warn("⚠️ WebSocket closed:", event.reason);
+          console.warn("WebSocket closed:", event.reason);
         };
       })
       .catch((error) => {
@@ -189,10 +189,10 @@ function CryptoBoard() {
   };
 
   if (failedToLoad) {
-    return <div>Načítání dat selhalo!</div>;
+    return <h1 className="global-message">Načítání dat selhalo!</h1>;
   }
   if (!populated) {
-    return <div>Načítání...</div>;
+    return <h1 className="global-message">Načítání...</h1>;
   }
   const headerGroup = table.getHeaderGroups()[0];
   const rows = table.getRowModel().rows;
