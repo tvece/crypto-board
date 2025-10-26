@@ -1,6 +1,6 @@
 import { flexRender, type Row } from "@tanstack/react-table";
 import type { Coin } from "../CryptoBoard";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 const HIGHLIGHT_MS = 2000;
 
@@ -36,4 +36,8 @@ function CoinRow({ row }: { row: Row<Coin> }) {
   );
 }
 
-export default CoinRow;
+// flexRender causes rerendering of all rows with each coin update
+export default memo(
+  CoinRow,
+  (prevProps, nextProps) => prevProps.row.id === nextProps.row.id && prevProps.row.original === nextProps.row.original
+);
