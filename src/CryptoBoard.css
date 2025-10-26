@@ -10,6 +10,8 @@
   --cb-cell-background-light: #1e2f55;
   --cb-cell-background-dark: black;
   --cb-table-radius: 20px;
+  --cb-green: #0b4d0b;
+  --cb-red: #660000;
   border-spacing: 0;
   margin: 1em;
   width: 90%;
@@ -119,7 +121,7 @@
   border-bottom: 1px solid var(--cb-border-color);
   color: var(--cb-text);
   background: var(--cb-cell-background);
-  transition: background-color 400ms ease;
+  transition: background-color 1000ms ease;
 }
 
 .cb-body tr:hover td {
@@ -155,4 +157,12 @@ td[data-column-id="symbol"] {
 
 td[data-column-id="name"] {
   width: 100%;
+}
+
+tr.flash-up td {
+  background-color: var(--cb-green);
+}
+
+tr.flash-down td {
+  background-color: var(--cb-red);
 }

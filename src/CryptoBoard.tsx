@@ -13,6 +13,7 @@ import React, { useEffect, useRef, useState } from "react";
 import CrossIcon from "./icons/cross.svg?react";
 import SearchIcon from "./icons/search.svg?react";
 import { z } from "zod";
+import CoinRow from "./Components/CoinRow";
 
 /**
  * zod schema for coin returned from the initial fetch
@@ -29,9 +30,9 @@ const CoinSchema = z.object({
 const CoinsSchema = CoinSchema.array();
 
 /**
- * coin returned from the initial fetch
+ * coin returned from the initial fetch plus a tracker of previous price (modified during updates)
  */
-type Coin = z.infer<typeof CoinSchema>;
+export type Coin = z.infer<typeof CoinSchema> & { previous_price?: number };
 
 /**
  * zod schema for coin returned from WebSocket
@@ -54,13 +55,13 @@ interface FilterFormElement extends HTMLFormElement {
   readonly elements: FilterFormControlsCollection;
 }
 /**
- * how many coins to monitor
+ * how many coins to monitor (counted from the top of the rank)
  */
-const MONITORED_COINS_COUNT = 5;
+const MONITORED_COINS_COUNT = 20;
 /**
  * Minimum interval in milliseconds between two updates of the same coin.
  */
-const COIN_UPDATE_THROTTLE = 30000;
+const COIN_UPDATE_THROTTLE = 5000;
 
 function CryptoBoard() {
   const [coins, setCoins] = useState<Coin[]>([]);
@@ -119,7 +120,9 @@ function CryptoBoard() {
           if (now - lastUpdates[symbol] > COIN_UPDATE_THROTTLE) {
             console.debug(`${new Date().toLocaleString()}   ${symbol} -> ${wsCoin.c}`);
             setCoins((prev) =>
-              prev.map((coin: Coin) => (coin.symbol === symbol ? { ...coin, current_price: wsCoin.c } : coin))
+              prev.map((coin: Coin) =>
+                coin.symbol === symbol ? { ...coin, current_price: wsCoin.c, previous_price: coin.current_price } : coin
+              )
             );
             lastUpdates[symbol] = now;
           }
@@ -243,13 +246,7 @@ function CryptoBoard() {
       </thead>
       <tbody className="cb-body">
         {table.getRowModel().rows.map((row) => (
-          <tr key={row.id}>
-            {row.getVisibleCells().map((cell) => (
-              <td key={cell.id} data-column-id={cell.column.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
-            ))}
-          </tr>
+          <CoinRow key={row.id} row={row}></CoinRow>
         ))}
       </tbody>
     </table>
