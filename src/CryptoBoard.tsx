@@ -57,7 +57,7 @@ interface FilterFormElement extends HTMLFormElement {
 /**
  * how many coins to monitor (counted from the top of the rank)
  */
-const MONITORED_COINS_COUNT = 20;
+const MONITORED_COINS_COUNT = 5;
 /**
  * Minimum interval in milliseconds between two updates of the same coin.
  */
