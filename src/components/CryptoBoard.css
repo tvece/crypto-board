@@ -46,6 +46,8 @@
   top: 0px;
 }
 
+/* SEARCH FORM */
+
 .cb-search-form-wrapper {
   padding: 1.5em;
   background: var(--cb-cell-background-dark);
@@ -107,6 +109,8 @@
   color: var(--cb-icon-color);
 }
 
+/* TABLE HEADER */
+
 .cb-header {
   background: var(--cb-cell-background-dark);
 }
@@ -152,6 +156,8 @@
   opacity: 0;
 }
 
+/* TABLE BODY */
+
 .cb-body td {
   padding: 1.25em 1.5em;
   border-bottom: 1px solid var(--cb-border-color);
@@ -187,6 +193,8 @@
   text-align: center;
 }
 
+/* DATA CELLS */
+
 td[data-column-id="symbol"],
 td[data-column-id="market_cap_rank"],
 td[data-column-id="price_change_percentage_24h"] {
@@ -205,6 +213,8 @@ td[data-column-id="symbol"] {
 td[data-column-id="name"] {
   width: 100%;
 }
+
+/* FLASH */
 
 tr.flash-up td {
   background-color: var(--cb-green);
