@@ -19,6 +19,9 @@ import type { Coin } from "../models/Coins";
 
 /**
  * TODO: comments
+ * TODO: try to fix sticky header on mobile
+ * TODO: try to have transition
+ * TODO: check websockets throttle implementation
  */
 
 interface FilterFormControlsCollection extends HTMLFormControlsCollection {
