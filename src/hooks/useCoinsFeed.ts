@@ -45,50 +45,12 @@ export default function useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle }
         setCoins(initialCoins);
         setStatus(COINS_FEED_STATUS.READY);
 
-        const monitoredCoins: Coin[] = [];
-        for (const initialCoin of initialCoins) {
-          /* coins with price exactly 1 will most likely not change */
-          if (initialCoin.current_price !== 1) {
-            monitoredCoins.push(initialCoin);
-          }
-          if (monitoredCoins.length === monitoredCoinsCount) break;
-        }
-        if (monitoredCoins.length !== monitoredCoinsCount) {
-          throw new Error(`Initial fetch does not contain at least ${monitoredCoinsCount} coins that can be monitored`);
-        }
-
+        const monitoredCoins = getMonitoredCoins(initialCoins, monitoredCoinsCount);
         console.debug(`Monitored coins: ${monitoredCoins.map((coin) => coin.symbol)}`);
 
-        const lastUpdates: Record<string, number> = {};
-        monitoredCoins.forEach((monitoredCoin) => (lastUpdates[monitoredCoin.symbol] = 0));
-
-        const streams = monitoredCoins.map((coin) => `${coin.symbol}usdt@ticker`).join("/");
-        socket = new WebSocket(`wss://fstream.binance.com/ws/stream?streams=${streams}`);
-
-        socket.onopen = () => console.log("WebSocket connection established");
-        socket.onmessage = (event) => {
-          const now = Date.now();
-          const eventData = JSON.parse(event.data);
-          const wsCoin = WSCoinSchema.parse(eventData);
-          const symbol = wsCoin.s.substring(0, wsCoin.s.length - "usdt".length).toLocaleLowerCase();
-          if (now - lastUpdates[symbol] > coinUpdateThrottle) {
-            setCoins((prev) =>
-              prev.map((coin: Coin) =>
-                coin.symbol === symbol ? { ...coin, current_price: wsCoin.c, previous_price: coin.current_price } : coin
-              )
-            );
-            lastUpdates[symbol] = now;
-          }
-        };
-        socket.onerror = (err) => {
-          console.error("WebSocket error:", err);
-        };
-        socket.onclose = (event) => {
-          console.warn("WebSocket closed:", event.reason);
-        };
+        socket = setupWebsocketConnection(monitoredCoins, setCoins, coinUpdateThrottle);
       })
       .catch((error) => {
-        //TODO split catch of initial data fetch and websocket logic
         if (controller.signal.aborted) {
           return; // StrictMode cleanup; not a real failure
         }
@@ -104,4 +66,52 @@ export default function useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle }
   }, [coinUpdateThrottle, monitoredCoinsCount]);
 
   return { coins, setCoins, status };
+}
+
+function getMonitoredCoins(initialCoins: Coin[], monitoredCoinsCount: number): Coin[] {
+  const monitoredCoins: Coin[] = [];
+  for (const initialCoin of initialCoins) {
+    /* coins with price exactly 1 will most likely not change */
+    if (initialCoin.current_price !== 1) {
+      monitoredCoins.push(initialCoin);
+    }
+    if (monitoredCoins.length === monitoredCoinsCount) break;
+  }
+  if (monitoredCoins.length !== monitoredCoinsCount) {
+    throw new Error(`Initial fetch does not contain at least ${monitoredCoinsCount} coins that can be monitored`);
+  }
+  return monitoredCoins;
+}
+
+function setupWebsocketConnection(
+  monitoredCoins: Coin[],
+  setCoins: Dispatch<SetStateAction<Coin[]>>,
+  coinUpdateThrottle: number
+): WebSocket {
+  const streams = monitoredCoins.map((coin) => `${coin.symbol}usdt@ticker`).join("/");
+  const socket = new WebSocket(`wss://fstream.binance.com/ws/stream?streams=${streams}`);
+  const lastUpdates: Record<string, number> = {};
+  monitoredCoins.forEach((monitoredCoin) => (lastUpdates[monitoredCoin.symbol] = 0));
+  socket.onopen = () => console.log("WebSocket connection established");
+  socket.onmessage = (event) => {
+    const now = Date.now();
+    const eventData = JSON.parse(event.data);
+    const wsCoin = WSCoinSchema.parse(eventData);
+    const symbol = wsCoin.s.substring(0, wsCoin.s.length - "usdt".length).toLocaleLowerCase();
+    if (now - lastUpdates[symbol] > coinUpdateThrottle) {
+      setCoins((prev) =>
+        prev.map((coin: Coin) =>
+          coin.symbol === symbol ? { ...coin, current_price: wsCoin.c, previous_price: coin.current_price } : coin
+        )
+      );
+      lastUpdates[symbol] = now;
+    }
+  };
+  socket.onerror = (err) => {
+    console.error("WebSocket error:", err);
+  };
+  socket.onclose = (event) => {
+    console.warn("WebSocket closed:", event.reason);
+  };
+  return socket;
 }

@@ -18,8 +18,6 @@ import useCoinsFeed, { COINS_FEED_STATUS, type CoinsFeedConfig } from "../hooks/
 import type { Coin } from "../models/Coins";
 
 /**
- * TODO: hooks + improve error handling of hooks and maybe split them
- * TODO: code cleanup
  * TODO: comments
  */
 
