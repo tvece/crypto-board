@@ -27,7 +27,6 @@ import CoinRow from "./Components/CoinRow";
  * TODO: comments
  * TODO: configuration of delays + make sure the delays are correct
  * TODO: fix coingecko bug that the order of the array is sometimes wrong
- * TODO: favicon?
  */
 
 /**
