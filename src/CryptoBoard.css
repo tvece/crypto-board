@@ -133,7 +133,7 @@
   border-bottom: 1px solid var(--cb-border-color);
   color: var(--cb-text);
   background: var(--cb-cell-background);
-  transition: background-color 1000ms ease;
+  transition: background-color 400ms ease;
 }
 
 .cb-body tr:hover td {

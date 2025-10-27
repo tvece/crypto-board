@@ -2,14 +2,14 @@ import { flexRender, type Row } from "@tanstack/react-table";
 import type { Coin } from "../CryptoBoard";
 import { memo, useEffect, useRef, useState } from "react";
 
-const HIGHLIGHT_MS = 2000;
+const HIGHLIGHT_MS = 900;
 
 function CoinRow({ row }: { row: Row<Coin> }) {
   const coin = row.original;
   const [flash, setFlash] = useState<null | "up" | "down">(null);
   const timeoutRef = useRef<number | null>(null);
   useEffect(() => {
-    if (coin.previous_price == null || coin.current_price === coin.previous_price) return;
+    if (!coin.previous_price || coin.current_price === coin.previous_price) return;
     const direction: "up" | "down" = coin.current_price > coin.previous_price ? "up" : "down";
     setFlash(direction);
     if (timeoutRef.current != null) {

@@ -7,6 +7,7 @@ import {
   useReactTable,
   type ColumnDef,
   type ColumnFiltersState,
+  type ColumnSort,
 } from "@tanstack/react-table";
 import "./CryptoBoard.css";
 import React, { useEffect, useRef, useState } from "react";
@@ -14,6 +15,20 @@ import CrossIcon from "./icons/cross.svg?react";
 import SearchIcon from "./icons/search.svg?react";
 import { z } from "zod";
 import CoinRow from "./Components/CoinRow";
+
+/**
+ * TODO: better file structure
+ *    hooks + improve error handling of hooks and maybe split them
+ *    schemas
+ *    Coin "types"
+ * TODO: responsive design
+ * TODO: check background
+ * TODO: code cleanup
+ * TODO: comments
+ * TODO: configuration of delays + make sure the delays are correct
+ * TODO: fix coingecko bug that the order of the array is sometimes wrong
+ * TODO: favicon?
+ */
 
 /**
  * zod schema for coin returned from the initial fetch
@@ -69,6 +84,7 @@ function CryptoBoard() {
   const [failedToLoad, setFailedToLoad] = useState(false);
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = React.useState<ColumnSort[]>([]);
 
   const [isFiltered, setIsFiltered] = useState(false);
   const inputFilterRef = useRef<HTMLInputElement>(null);
@@ -145,6 +161,11 @@ function CryptoBoard() {
     };
   }, []);
 
+  // prevents flash when sorting changes or row was not rendered but after change of filter is
+  useEffect(() => {
+    setCoins((prev) => prev.map((coin: Coin) => (coin.previous_price ? { ...coin, previous_price: undefined } : coin)));
+  }, [columnFilters, sorting]);
+
   const columns = React.useMemo<ColumnDef<Coin>[]>(
     () => [
       { header: "RANK", accessorKey: "market_cap_rank" },
@@ -164,9 +185,11 @@ function CryptoBoard() {
     enableMultiSort: false,
     getFilteredRowModel: getFilteredRowModel(),
     state: {
+      sorting,
       columnFilters,
     },
     onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
   });
 
   const handleFilter = (event: React.FormEvent<FilterFormElement>) => {
