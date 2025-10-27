@@ -1,7 +1,7 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { CoinsSchema, WSCoinSchema, type Coin } from "../models/Coins";
 
-export type CoinsFeedArgs = {
+export type CoinsFeedConfig = {
   /**
    * how many coins to monitor (counted from the top of the rank)
    */
@@ -12,21 +12,28 @@ export type CoinsFeedArgs = {
   coinUpdateThrottle: number;
 };
 
+export const COINS_FEED_STATUS = {
+  LOADING: "loading",
+  READY: "ready",
+  ERROR: "error",
+};
+
+export type CoinsFeedStatus = (typeof COINS_FEED_STATUS)[keyof typeof COINS_FEED_STATUS];
+
 type CoinsFeedResult = {
   coins: Coin[];
   setCoins: Dispatch<SetStateAction<Coin[]>>;
-  populated: boolean;
-  failedToLoad: boolean;
+  status: CoinsFeedStatus;
 };
 
-export default function useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle }: CoinsFeedArgs): CoinsFeedResult {
+export default function useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle }: CoinsFeedConfig): CoinsFeedResult {
   const [coins, setCoins] = useState<Coin[]>([]);
-  const [populated, setPopulated] = useState(false);
-  const [failedToLoad, setFailedToLoad] = useState(false);
+  const [status, setStatus] = useState<CoinsFeedStatus>(COINS_FEED_STATUS.LOADING);
 
   useEffect(() => {
     const controller = new AbortController();
     let socket: WebSocket | null = null;
+    setStatus(COINS_FEED_STATUS.LOADING);
     fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100", {
       signal: controller.signal,
     })
@@ -36,7 +43,7 @@ export default function useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle }
           // coingecko api sometimes returns the elements in wrong order
           .sort((a, b) => a.market_cap_rank - b.market_cap_rank);
         setCoins(initialCoins);
-        setPopulated(true);
+        setStatus(COINS_FEED_STATUS.READY);
 
         const monitoredCoins: Coin[] = [];
         for (const initialCoin of initialCoins) {
@@ -85,7 +92,7 @@ export default function useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle }
         if (controller.signal.aborted) {
           return; // StrictMode cleanup; not a real failure
         }
-        setFailedToLoad(true);
+        setStatus(COINS_FEED_STATUS.ERROR);
         console.error(error);
       });
     return () => {
@@ -96,5 +103,5 @@ export default function useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle }
     };
   }, [coinUpdateThrottle, monitoredCoinsCount]);
 
-  return { coins, setCoins, populated, failedToLoad };
+  return { coins, setCoins, status };
 }

@@ -14,7 +14,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import CrossIcon from "../icons/cross.svg?react";
 import SearchIcon from "../icons/search.svg?react";
 import CoinRow from "./CoinRow";
-import useCoinsFeed, { type CoinsFeedArgs } from "../hooks/useCoinsFeed";
+import useCoinsFeed, { COINS_FEED_STATUS, type CoinsFeedConfig } from "../hooks/useCoinsFeed";
 import type { Coin } from "../models/Coins";
 
 /**
@@ -30,7 +30,7 @@ interface FilterFormElement extends HTMLFormElement {
   readonly elements: FilterFormControlsCollection;
 }
 
-type CryptoBoardProps = CoinsFeedArgs & {
+type CryptoBoardProps = CoinsFeedConfig & {
   /**
    * duration in ms the row stays highlighted after update (do not forget to count in transition)
    */
@@ -38,7 +38,7 @@ type CryptoBoardProps = CoinsFeedArgs & {
 };
 
 function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration }: CryptoBoardProps) {
-  const { coins, setCoins, populated, failedToLoad } = useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle });
+  const { coins, setCoins, status } = useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle });
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<ColumnSort[]>([]);
@@ -92,10 +92,10 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
     setIsFiltered(false);
   };
 
-  if (failedToLoad) {
+  if (status === COINS_FEED_STATUS.ERROR) {
     return <h1 className="global-message">Načítání dat selhalo!</h1>;
   }
-  if (!populated) {
+  if (status !== COINS_FEED_STATUS.READY) {
     return <h1 className="global-message">Načítání...</h1>;
   }
   const headerGroup = table.getHeaderGroups()[0];
@@ -154,10 +154,9 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
         {rows.length === 0 ? (
           <tr>
             <td className="no-results" colSpan={headerGroup.headers.length}>
-              {
-                /* isFiltered does not have to be checked (if the initial data is empty failedToLoad is set)*/
-                "Žádné výsledky. Zkuste upravit hledaný výraz."
-              }
+              {/* here we can be sure that no rows available is caused by filter because
+                no coins found from initial fetch is handled eariler by COINS_FEED_STATUS */}
+              {"Žádné výsledky. Zkuste upravit hledaný výraz."}
             </td>
           </tr>
         ) : (
