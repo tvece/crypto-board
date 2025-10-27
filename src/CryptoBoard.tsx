@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState } from "react";
 import CrossIcon from "./icons/cross.svg?react";
 import SearchIcon from "./icons/search.svg?react";
 import { z } from "zod";
-import CoinRow from "./Components/CoinRow";
+import CoinRow from "./components/CoinRow";
 
 /**
  * TODO: better file structure
