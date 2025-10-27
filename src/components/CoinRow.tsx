@@ -1,6 +1,6 @@
 import { flexRender, type Row } from "@tanstack/react-table";
-import type { Coin } from "../CryptoBoard";
 import { memo, useEffect, useRef, useState } from "react";
+import type { Coin } from "../models/Coins";
 
 function CoinRow({ row, highlightDuration }: { row: Row<Coin>; highlightDuration: number }) {
   const coin = row.original;

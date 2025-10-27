@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import CryptoBoard from "./CryptoBoard.tsx";
+import CryptoBoard from "./components/CryptoBoard.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
