@@ -26,7 +26,6 @@ import CoinRow from "./Components/CoinRow";
  * TODO: code cleanup
  * TODO: comments
  * TODO: configuration of delays + make sure the delays are correct
- * TODO: fix coingecko bug that the order of the array is sometimes wrong
  */
 
 /**
@@ -96,7 +95,9 @@ function CryptoBoard() {
     })
       .then((res) => res.json())
       .then((jsonData) => {
-        const initialCoins = CoinsSchema.parse(jsonData);
+        const initialCoins = CoinsSchema.parse(jsonData)
+          // coingecko api sometimes returns the elements in wrong order
+          .sort((a, b) => a.market_cap_rank - b.market_cap_rank);
         setCoins(initialCoins);
         setPopulated(true);
 
