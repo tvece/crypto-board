@@ -2,9 +2,7 @@ import { flexRender, type Row } from "@tanstack/react-table";
 import type { Coin } from "../CryptoBoard";
 import { memo, useEffect, useRef, useState } from "react";
 
-const HIGHLIGHT_MS = 900;
-
-function CoinRow({ row }: { row: Row<Coin> }) {
+function CoinRow({ row, highlightDuration }: { row: Row<Coin>; highlightDuration: number }) {
   const coin = row.original;
   const [flash, setFlash] = useState<null | "up" | "down">(null);
   const timeoutRef = useRef<number | null>(null);
@@ -15,8 +13,8 @@ function CoinRow({ row }: { row: Row<Coin> }) {
     if (timeoutRef.current != null) {
       window.clearTimeout(timeoutRef.current);
     }
-    timeoutRef.current = window.setTimeout(() => setFlash(null), HIGHLIGHT_MS);
-  }, [coin.current_price, coin.previous_price]);
+    timeoutRef.current = window.setTimeout(() => setFlash(null), highlightDuration);
+  }, [coin.current_price, coin.previous_price, highlightDuration]);
 
   // clear any pending timeout only on unmount
   useEffect(() => {

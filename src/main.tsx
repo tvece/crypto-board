@@ -5,6 +5,11 @@ import CryptoBoard from "./CryptoBoard.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <CryptoBoard />
+    <CryptoBoard
+      monitoredCoinsCount={5}
+      coinUpdateThrottle={1000}
+      // 500 + transition
+      highlightDuration={900}
+    />
   </StrictMode>
 );

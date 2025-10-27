@@ -23,7 +23,6 @@ import CoinRow from "./Components/CoinRow";
  *    Coin "types"
  * TODO: code cleanup
  * TODO: comments
- * TODO: configuration of delays + make sure the delays are correct
  */
 
 /**
@@ -65,16 +64,24 @@ interface FilterFormControlsCollection extends HTMLFormControlsCollection {
 interface FilterFormElement extends HTMLFormElement {
   readonly elements: FilterFormControlsCollection;
 }
-/**
- * how many coins to monitor (counted from the top of the rank)
- */
-const MONITORED_COINS_COUNT = 5;
-/**
- * Minimum interval in milliseconds between two updates of the same coin.
- */
-const COIN_UPDATE_THROTTLE = 5000;
 
-function CryptoBoard() {
+type CryptoBoardProps = {
+  /**
+   * how many coins to monitor (counted from the top of the rank)
+   */
+  monitoredCoinsCount: number;
+  /**
+   * Minimum interval in milliseconds between two updates of the same coin.
+   */
+  coinUpdateThrottle: number;
+
+  /**
+   * duration in ms the row stays highlighted after update (do not forget to count in transition)
+   */
+  highlightDuration: number;
+};
+
+function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration }: CryptoBoardProps) {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [populated, setPopulated] = useState(false);
   const [failedToLoad, setFailedToLoad] = useState(false);
@@ -105,12 +112,10 @@ function CryptoBoard() {
           if (initialCoin.current_price !== 1) {
             monitoredCoins.push(initialCoin);
           }
-          if (monitoredCoins.length === MONITORED_COINS_COUNT) break;
+          if (monitoredCoins.length === monitoredCoinsCount) break;
         }
-        if (monitoredCoins.length !== MONITORED_COINS_COUNT) {
-          throw new Error(
-            `Initial fetch does not contain at least ${MONITORED_COINS_COUNT} coins that can be monitored`
-          );
+        if (monitoredCoins.length !== monitoredCoinsCount) {
+          throw new Error(`Initial fetch does not contain at least ${monitoredCoinsCount} coins that can be monitored`);
         }
 
         console.debug(`Monitored coins: ${monitoredCoins.map((coin) => coin.symbol)}`);
@@ -127,7 +132,7 @@ function CryptoBoard() {
           const eventData = JSON.parse(event.data);
           const wsCoin = WSCoinSchema.parse(eventData);
           const symbol = wsCoin.s.substring(0, wsCoin.s.length - "usdt".length).toLocaleLowerCase();
-          if (now - lastUpdates[symbol] > COIN_UPDATE_THROTTLE) {
+          if (now - lastUpdates[symbol] > coinUpdateThrottle) {
             setCoins((prev) =>
               prev.map((coin: Coin) =>
                 coin.symbol === symbol ? { ...coin, current_price: wsCoin.c, previous_price: coin.current_price } : coin
@@ -274,7 +279,7 @@ function CryptoBoard() {
             </td>
           </tr>
         ) : (
-          rows.map((row) => <CoinRow key={row.id} row={row} />)
+          rows.map((row) => <CoinRow key={row.id} row={row} highlightDuration={highlightDuration} />)
         )}
       </tbody>
     </table>
