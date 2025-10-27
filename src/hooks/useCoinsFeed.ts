@@ -46,7 +46,7 @@ export default function useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle }
         setStatus(COINS_FEED_STATUS.READY);
 
         const monitoredCoins = getMonitoredCoins(initialCoins, monitoredCoinsCount);
-        console.debug(`Monitored coins: ${monitoredCoins.map((coin) => coin.symbol)}`);
+        console.debug(`Monitored coins: ${monitoredCoins.map((coin) => coin.symbol).join(", ")}`);
 
         socket = setupWebsocketConnection(monitoredCoins, setCoins, coinUpdateThrottle);
       })
@@ -95,8 +95,7 @@ function setupWebsocketConnection(
   socket.onopen = () => console.log("WebSocket connection established");
   socket.onmessage = (event) => {
     const now = Date.now();
-    const eventData = JSON.parse(event.data);
-    const wsCoin = WSCoinSchema.parse(eventData);
+    const wsCoin = WSCoinSchema.parse(JSON.parse(event.data as string));
     const symbol = wsCoin.s.substring(0, wsCoin.s.length - "usdt".length).toLocaleLowerCase();
     if (now - lastUpdates[symbol] > coinUpdateThrottle) {
       setCoins((prev) =>
