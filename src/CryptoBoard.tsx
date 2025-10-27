@@ -22,7 +22,6 @@ import CoinRow from "./Components/CoinRow";
  *    schemas
  *    Coin "types"
  * TODO: responsive design
- * TODO: check background
  * TODO: code cleanup
  * TODO: comments
  * TODO: configuration of delays + make sure the delays are correct
@@ -226,6 +225,7 @@ function CryptoBoard() {
                 type="text"
                 autoComplete="off"
                 className="cb-search-input"
+                aria-label="search input"
                 ref={inputFilterRef}
               ></input>
               {isFiltered ? (
