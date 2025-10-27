@@ -10,7 +10,7 @@ import {
   type ColumnSort,
 } from "@tanstack/react-table";
 import "./CryptoBoard.css";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import CrossIcon from "../icons/cross.svg?react";
 import SearchIcon from "../icons/search.svg?react";
 import CoinRow from "./CoinRow";
@@ -41,7 +41,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
   const { coins, setCoins, populated, failedToLoad } = useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle });
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = React.useState<ColumnSort[]>([]);
+  const [sorting, setSorting] = useState<ColumnSort[]>([]);
 
   const [isFiltered, setIsFiltered] = useState(false);
   const inputFilterRef = useRef<HTMLInputElement>(null);
@@ -51,7 +51,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
     setCoins((prev) => prev.map((coin: Coin) => (coin.previous_price ? { ...coin, previous_price: undefined } : coin)));
   }, [columnFilters, setCoins, sorting]);
 
-  const columns = React.useMemo<ColumnDef<Coin>[]>(
+  const columns = useMemo<ColumnDef<Coin>[]>(
     () => [
       { header: "RANK", accessorKey: "market_cap_rank" },
       { header: "ZKRATKA", accessorKey: "symbol" },
@@ -77,7 +77,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
     onSortingChange: setSorting,
   });
 
-  const handleFilter = (event: React.FormEvent<FilterFormElement>) => {
+  const handleFilter = (event: FormEvent<FilterFormElement>) => {
     event.preventDefault();
     const filterValue = event.currentTarget.elements.filter.value;
     setColumnFilters([{ id: "name", value: filterValue }]);

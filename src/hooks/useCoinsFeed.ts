@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { CoinsSchema, WSCoinSchema, type Coin } from "../models/Coins";
 
 export type CoinsFeedArgs = {
@@ -14,7 +14,7 @@ export type CoinsFeedArgs = {
 
 type CoinsFeedResult = {
   coins: Coin[];
-  setCoins: React.Dispatch<React.SetStateAction<Coin[]>>;
+  setCoins: Dispatch<SetStateAction<Coin[]>>;
   populated: boolean;
   failedToLoad: boolean;
 };
