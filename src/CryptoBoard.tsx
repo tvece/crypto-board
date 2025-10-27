@@ -21,7 +21,6 @@ import CoinRow from "./Components/CoinRow";
  *    hooks + improve error handling of hooks and maybe split them
  *    schemas
  *    Coin "types"
- * TODO: responsive design
  * TODO: code cleanup
  * TODO: comments
  * TODO: configuration of delays + make sure the delays are correct

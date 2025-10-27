@@ -14,6 +14,12 @@
   --cb-red: #660000;
 }
 
+@media screen and (max-width: 800px) {
+  :root {
+    --cb-table-radius: 12px;
+  }
+}
+
 .global-message {
   color: var(--cb-text, #f8fafc);
   display: flex;
@@ -53,9 +59,15 @@
   border-radius: var(--cb-table-radius);
   background: var(--cb-cell-background);
   transition: border-color 200ms ease, box-shadow 200ms ease;
-  max-width: 80vw;
+  max-width: 85vw;
   position: sticky;
-  left: 10vw;
+  left: 5vw;
+}
+
+@media screen and (max-width: 800px) {
+  .cb-search-form-wrapper {
+    padding: 0.5em;
+  }
 }
 
 .cb-search-form:hover,
@@ -85,6 +97,12 @@
   cursor: pointer;
 }
 
+@media screen and (max-width: 800px) {
+  .cb-search-button {
+    width: 22px;
+  }
+}
+
 .cb-search-icon {
   color: var(--cb-icon-color);
 }
@@ -98,6 +116,12 @@
   font-size: 0.75rem;
   letter-spacing: var(--cb-letter-spacing-wide);
   color: var(--cb-muted);
+}
+
+@media screen and (max-width: 800px) {
+  .cb-header-cell {
+    padding: 0.5em;
+  }
 }
 
 .cb-header-cell:hover {
@@ -134,6 +158,12 @@
   color: var(--cb-text);
   background: var(--cb-cell-background);
   transition: background-color 400ms ease;
+}
+
+@media screen and (max-width: 800px) {
+  .cb-body td {
+    padding: 0.25em 0.5em;
+  }
 }
 
 .cb-body tr:hover td {
