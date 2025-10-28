@@ -10,7 +10,6 @@ import ColumnHeaderCell from "./ColumnHeaderCell";
 /**
  * TODO: try to have transition
  * TODO: check websockets throttle implementation
- * TODO: do lowercase compare
  */
 
 export type ColumnDefinition = {
@@ -164,8 +163,8 @@ function getCuratedCoins(
         return isAscendingSort ? aValue - bValue : bValue - aValue;
       }
 
-      const aString = String(aValue);
-      const bString = String(bValue);
+      const aString = String(aValue).toLocaleLowerCase();
+      const bString = String(bValue).toLocaleLowerCase();
 
       if (aString === bString) {
         return 0;
