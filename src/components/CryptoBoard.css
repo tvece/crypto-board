@@ -11,7 +11,9 @@
   --cb-cell-background-dark: black;
   --cb-table-radius: 20px;
   --cb-green: #0b4d0b;
+  --cb-light-green: #157c15;
   --cb-red: #660000;
+  --cb-light-red: rgb(156, 33, 33);
 }
 
 @media screen and (max-width: 800px), screen and (max-height: 600px) {
@@ -184,6 +186,7 @@
 
 .cb-body tr:hover td {
   background: var(--cb-cell-background-light);
+  transition: none;
 }
 
 .cb-body tr:last-child td {
@@ -230,6 +233,14 @@ tr.flash-up td {
   background-color: var(--cb-green);
 }
 
+.cb-body tr.flash-up:hover td {
+  background-color: var(--cb-light-green);
+}
+
 tr.flash-down td {
   background-color: var(--cb-red);
+}
+
+.cb-body tr.flash-down:hover td {
+  background-color: var(--cb-light-red);
 }

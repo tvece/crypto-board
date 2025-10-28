@@ -16,11 +16,11 @@ function CoinRow({ coin }: CoinRowProps) {
           : "flash-down"
       }
     >
-      <td>{coin.market_cap_rank}</td>
-      <td>{coin.symbol}</td>
-      <td>{coin.name}</td>
-      <td>{coin.current_price}</td>
-      <td>{coin.price_change_percentage_24h}</td>
+      <td data-column-id="market_cap_rank">{coin.market_cap_rank}</td>
+      <td data-column-id="symbol">{coin.symbol}</td>
+      <td data-column-id="name">{coin.name}</td>
+      <td data-column-id="current_price">{coin.current_price}</td>
+      <td data-column-id="price_change_percentage_24h">{coin.price_change_percentage_24h}</td>
     </tr>
   );
 }
