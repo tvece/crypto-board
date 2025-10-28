@@ -1,41 +1,21 @@
-import { flexRender, type Row } from "@tanstack/react-table";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo } from "react";
 import type { Coin } from "../models/Coins";
 
-function CoinRow({ row, highlightDuration }: { row: Row<Coin>; highlightDuration: number }) {
-  const coin = row.original;
-  const [flash, setFlash] = useState<null | "up" | "down">(null);
-  const timeoutRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (!coin.previous_price || coin.current_price === coin.previous_price) return;
-    const direction: "up" | "down" = coin.current_price > coin.previous_price ? "up" : "down";
-    setFlash(direction);
-    if (timeoutRef.current != null) {
-      window.clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = window.setTimeout(() => setFlash(null), highlightDuration);
-  }, [coin.current_price, coin.previous_price, highlightDuration]);
+type CoinRowProps = {
+  coin: Coin;
+  className?: string;
+};
 
-  // clear any pending timeout only on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current != null) {
-        window.clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
+function CoinRow({ className, coin }: CoinRowProps) {
   return (
-    <tr className={flash === "up" ? "flash-up" : flash === "down" ? "flash-down" : undefined}>
-      {row.getVisibleCells().map((cell) => (
-        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-      ))}
+    <tr className={className}>
+      <td>{coin.market_cap_rank}</td>
+      <td>{coin.symbol}</td>
+      <td>{coin.name}</td>
+      <td>{coin.current_price}</td>
+      <td>{coin.price_change_percentage_24h}</td>
     </tr>
   );
 }
 
-// flexRender causes rerendering of all rows with each coin update
-export default memo(
-  CoinRow,
-  (prevProps, nextProps) => prevProps.row.id === nextProps.row.id && prevProps.row.original === nextProps.row.original
-);
+export default memo(CoinRow);

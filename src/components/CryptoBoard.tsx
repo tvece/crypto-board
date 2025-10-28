@@ -1,21 +1,11 @@
 /// <reference types="vite-plugin-svgr/client" />
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
-  type ColumnSort,
-} from "@tanstack/react-table";
 import "./CryptoBoard.css";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import CrossIcon from "../icons/cross.svg?react";
 import SearchIcon from "../icons/search.svg?react";
-import CoinRow from "./CoinRow";
 import useCoinsFeed, { COINS_FEED_STATUS, type CoinsFeedConfig } from "../hooks/useCoinsFeed";
-import type { Coin } from "../models/Coins";
+import { PREVIOUS_PRICE_INDICATOR } from "../models/Coins";
+import CoinRow from "./CoinRow";
 
 /**
  * TODO: comments
@@ -31,57 +21,18 @@ interface FilterFormElement extends HTMLFormElement {
   readonly elements: FilterFormControlsCollection;
 }
 
-type CryptoBoardProps = CoinsFeedConfig & {
-  /**
-   * duration in ms the row stays highlighted after update (do not forget to count in transition)
-   */
-  highlightDuration: number;
-};
+type CryptoBoardProps = CoinsFeedConfig;
 
 function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration }: CryptoBoardProps) {
-  const { coins, setCoins, status } = useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle });
-
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = useState<ColumnSort[]>([]);
+  const { coins, /*setCoins,*/ status } = useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration });
 
   const [isFiltered, setIsFiltered] = useState(false);
   const inputFilterRef = useRef<HTMLInputElement>(null);
 
-  // prevents flash when sorting changes or row was not rendered but after change of filter is
-  useEffect(() => {
-    setCoins((prev) => prev.map((coin: Coin) => (coin.previous_price ? { ...coin, previous_price: undefined } : coin)));
-  }, [columnFilters, setCoins, sorting]);
-
-  const columns = useMemo<ColumnDef<Coin>[]>(
-    () => [
-      { header: "RANK", accessorKey: "market_cap_rank" },
-      { header: "ZKRATKA", accessorKey: "symbol" },
-      { header: "NÁZEV", accessorKey: "name", filterFn: "includesString" },
-      { header: "CENA", accessorKey: "current_price" },
-      { header: "ZMĚNA 24h", accessorKey: "price_change_percentage_24h" },
-    ],
-    []
-  );
-  const table = useReactTable({
-    data: coins,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getRowId: (row) => row.id,
-    getSortedRowModel: getSortedRowModel(),
-    enableMultiSort: false,
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      columnFilters,
-    },
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
-  });
-
   const handleFilter = (event: FormEvent<FilterFormElement>) => {
     event.preventDefault();
     const filterValue = event.currentTarget.elements.filter.value;
-    setColumnFilters([{ id: "name", value: filterValue }]);
+    //setColumnFilters([{ id: "name", value: filterValue }]);
     setIsFiltered(filterValue.length != 0);
   };
 
@@ -89,7 +40,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
     if (inputFilterRef.current) {
       inputFilterRef.current.value = "";
     }
-    setColumnFilters([]);
+    //setColumnFilters([]);
     setIsFiltered(false);
   };
 
@@ -99,13 +50,20 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
   if (status !== COINS_FEED_STATUS.READY) {
     return <h1 className="global-message">Načítání...</h1>;
   }
-  const headerGroup = table.getHeaderGroups()[0];
-  const rows = table.getRowModel().rows;
+
+  const columns = [
+    { header: "RANK", accessorKey: "market_cap_rank" },
+    { header: "ZKRATKA", accessorKey: "symbol" },
+    { header: "NÁZEV", accessorKey: "name", filterFn: "includesString" },
+    { header: "CENA", accessorKey: "current_price" },
+    { header: "ZMĚNA 24h", accessorKey: "price_change_percentage_24h" },
+  ];
+
   return (
     <table className="cb">
       <thead>
         <tr>
-          <td colSpan={headerGroup.headers.length} className="cb-search-form-wrapper">
+          <td colSpan={columns.length} className="cb-search-form-wrapper">
             <form onSubmit={handleFilter} autoComplete="off" className="cb-search-form">
               <input
                 id="filter"
@@ -128,40 +86,50 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
             </form>
           </td>
         </tr>
-        {
-          <tr className="cb-header" key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <th key={header.id} onClick={header.column.getToggleSortingHandler()} className="cb-header-cell">
+        <tr className="cb-header">
+          {columns.map((column) => {
+            return (
+              <th key={column.accessorKey} onClick={() => alert("header cell click")} className="cb-header-cell">
                 <span className="cb-header-cell-content">
-                  <span className="cb-header-cell-text">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </span>
+                  <span className="cb-header-cell-text">{column.header}</span>
 
-                  {header.column.getIsSorted() === "asc" ? (
+                  {/*header.column.getIsSorted() === "asc" ? (
                     <span className="cb-header-cell-icon">&nbsp;🔼</span>
                   ) : header.column.getIsSorted() === "desc" ? (
                     <span className="cb-header-cell-icon">&nbsp;🔽</span>
                   ) : (
-                    /* invisible span to prevent sort icon increasing column width */
+                    \/* invisible span to prevent sort icon increasing column width *\/
                     <span className="cb-header-cell-icon invisible">&nbsp;🔼</span>
-                  )}
+                  )*/}
                 </span>
               </th>
-            ))}
-          </tr>
-        }
+            );
+          })}
+        </tr>
       </thead>
       <tbody className="cb-body">
-        {rows.length === 0 ? (
+        {coins.length === 0 ? (
           <tr>
-            <td className="no-results" colSpan={headerGroup.headers.length}>
+            <td className="no-results" colSpan={columns.length}>
               {/* here we can be sure that no rows available is caused by filter because
                 no coins found from initial fetch is handled eariler by COINS_FEED_STATUS */}
               {"Žádné výsledky. Zkuste upravit hledaný výraz."}
             </td>
           </tr>
         ) : (
-          rows.map((row) => <CoinRow key={row.id} row={row} highlightDuration={highlightDuration} />)
+          coins.map((coin) => (
+            <CoinRow
+              key={coin.id}
+              coin={coin}
+              className={
+                !coin.previousPriceIndicator
+                  ? undefined
+                  : coin.previousPriceIndicator == PREVIOUS_PRICE_INDICATOR.UP
+                  ? "flash-up"
+                  : "flash-down"
+              }
+            />
+          ))
         )}
       </tbody>
     </table>
