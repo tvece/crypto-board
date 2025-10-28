@@ -10,10 +10,14 @@ body {
 
 body::before {
   content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
   background: linear-gradient(180deg, #1e2a42 0%, #111827 100%);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: fixed;
+  min-height: 100vh;
+  width: 100vw;
+  z-index: -1;
 }
 
 :root {
