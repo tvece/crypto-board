@@ -1,31 +1,29 @@
 /// <reference types="vite-plugin-svgr/client" />
 import "./CryptoBoard.css";
 import { useRef, useState, type FormEvent } from "react";
-import CrossIcon from "../icons/cross.svg?react";
-import SearchIcon from "../icons/search.svg?react";
 import useCoinsFeed, { COINS_FEED_STATUS, type CoinsFeedConfig } from "../hooks/useCoinsFeed";
 import { type Coin } from "../models/Coins";
 import CoinRow from "./CoinRow";
+import { SearchForm, type FilterFormElement } from "./SearchForm";
+import ColumnHeaderCell from "./ColumnHeaderCell";
 
 /**
  * TODO: comments
  * TODO: try to fix sticky header on mobile
  * TODO: try to have transition
  * TODO: check websockets throttle implementation
- * TODO: do not highlight text on double click on cell
+ * TODO: do not highlight text on double click on cell header
  */
 
-interface FilterFormControlsCollection extends HTMLFormControlsCollection {
-  filter: HTMLInputElement;
-}
-interface FilterFormElement extends HTMLFormElement {
-  readonly elements: FilterFormControlsCollection;
-}
-
-type ColumnDefinition = {
-  /* header text to display in gui */
+export type ColumnDefinition = {
+  /**
+   * header text to display in gui
+   */
   text: string;
-  /* id of the column */
+
+  /**
+   * id of the column and accesor for the property of {@link Coin} (for sorting purposes)
+   */
   id: string;
 };
 
@@ -39,7 +37,7 @@ const columns: ColumnDefinition[] = [
 
 type CryptoBoardProps = CoinsFeedConfig;
 
-function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration }: CryptoBoardProps) {
+export default function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration }: CryptoBoardProps) {
   const { coins, /*setCoins,*/ status } = useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration });
 
   const [filter, setFilter] = useState<string | undefined>();
@@ -61,7 +59,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
     setFilter(undefined);
   };
 
-  const columnHeaderClick = (accessorKey: string) => {
+  const columnHeaderCellClick = (accessorKey: string) => {
     if (sortKey === accessorKey) {
       if (isAscendingSort) {
         setIsAscendingSort(!isAscendingSort);
@@ -83,10 +81,61 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
     return <h1 className="global-message">Načítání...</h1>;
   }
 
-  /**
-   * sorted and filtered coins
-   */
-  const curatedCoins = coins
+  const curatedCoins = getSortedAndFilteredCoins(coins, filter, sortKey, isAscendingSort);
+
+  return (
+    <table className="cb">
+      <thead>
+        <tr>
+          <td colSpan={columns.length} className="cb-search-form-wrapper">
+            <SearchForm
+              handleFilter={handleFilter}
+              inputFilterRef={inputFilterRef}
+              clearFilter={clearFilter}
+              filtered={filter ? filter.length > 0 : false}
+            ></SearchForm>
+          </td>
+        </tr>
+        <tr className="cb-header">
+          {columns.map((column) => {
+            return (
+              <ColumnHeaderCell
+                column={column}
+                columnHeaderCellClick={columnHeaderCellClick}
+                isSortedBy={sortKey === column.id}
+                isAscendingSort={isAscendingSort}
+              />
+            );
+          })}
+        </tr>
+      </thead>
+      <tbody className="cb-body">
+        {curatedCoins.length === 0 ? (
+          <tr>
+            <td className="no-results" colSpan={columns.length}>
+              {/* here we can be sure that no rows available is caused by filter because
+                no coins found from initial fetch is handled eariler by COINS_FEED_STATUS */}
+              {"Žádné výsledky. Zkuste upravit hledaný výraz."}
+            </td>
+          </tr>
+        ) : (
+          curatedCoins.map((coin) => <CoinRow key={coin.id} coin={coin} />)
+        )}
+      </tbody>
+    </table>
+  );
+}
+
+/**
+ * @returns sorted and filtered coins
+ */
+function getSortedAndFilteredCoins(
+  allCoins: Coin[],
+  filter: string | undefined,
+  sortKey: string,
+  isAscendingSort: boolean
+): Coin[] {
+  return allCoins
     .filter((coin) => {
       return filter ? coin.name.toLowerCase().includes(filter) : coin;
     })
@@ -111,72 +160,4 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
 
       return aString > bString ? -1 : 1;
     });
-
-  return (
-    <table className="cb">
-      <thead>
-        <tr>
-          <td colSpan={columns.length} className="cb-search-form-wrapper">
-            <form onSubmit={handleFilter} autoComplete="off" className="cb-search-form">
-              <input
-                id="filter"
-                type="text"
-                autoComplete="off"
-                className="cb-search-input"
-                aria-label="search input"
-                ref={inputFilterRef}
-              ></input>
-              {filter ? (
-                <button type="button" className="cb-search-button" title="Zrušit hledání" onClick={clearFilter}>
-                  <CrossIcon className="cb-search-icon" />
-                </button>
-              ) : (
-                <></>
-              )}
-              <button className="cb-search-button" title="Vyhledat" type="submit">
-                <SearchIcon className="cb-search-icon"></SearchIcon>
-              </button>
-            </form>
-          </td>
-        </tr>
-        <tr className="cb-header">
-          {columns.map((column) => {
-            return (
-              <th key={column.id} onClick={() => columnHeaderClick(column.id)} className="cb-header-cell">
-                <span className="cb-header-cell-content">
-                  <span className="cb-header-cell-text">{column.text}</span>
-
-                  {sortKey === column.id ? (
-                    isAscendingSort ? (
-                      <span className="cb-header-cell-icon">&nbsp;🔼</span>
-                    ) : (
-                      <span className="cb-header-cell-icon">&nbsp;🔽</span>
-                    )
-                  ) : (
-                    /* invisible span to prevent sort icon increasing column width */
-                    <span className="cb-header-cell-icon invisible">&nbsp;🔼</span>
-                  )}
-                </span>
-              </th>
-            );
-          })}
-        </tr>
-      </thead>
-      <tbody className="cb-body">
-        {curatedCoins.length === 0 ? (
-          <tr>
-            <td className="no-results" colSpan={columns.length}>
-              {/* here we can be sure that no rows available is caused by filter because
-                no coins found from initial fetch is handled eariler by COINS_FEED_STATUS */}
-              {"Žádné výsledky. Zkuste upravit hledaný výraz."}
-            </td>
-          </tr>
-        ) : (
-          curatedCoins.map((coin) => <CoinRow key={coin.id} coin={coin} />)
-        )}
-      </tbody>
-    </table>
-  );
 }
-
-export default CryptoBoard;
