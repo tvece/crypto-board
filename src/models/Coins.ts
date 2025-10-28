@@ -22,7 +22,7 @@ export const PREVIOUS_PRICE_INDICATOR = {
 export type PREVIOUS_PRICE_INDICATOR = (typeof PREVIOUS_PRICE_INDICATOR)[keyof typeof PREVIOUS_PRICE_INDICATOR];
 
 /**
- * coin returned from the initial fetch plus an indicator of price change compared to previous if coin is updated by websocket
+ * coin returned from the initial fetch plus an indicator of price change compared to previous if coin is updated by WebSocket
  */
 export type Coin = z.infer<typeof CoinSchema> & { previousPriceIndicator?: PREVIOUS_PRICE_INDICATOR };
 

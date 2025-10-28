@@ -26,13 +26,10 @@ export type CoinsFeedStatus = (typeof COINS_FEED_STATUS)[keyof typeof COINS_FEED
 
 type CoinsFeedResult = {
   coins: Coin[];
-  setCoins: Dispatch<SetStateAction<Coin[]>>;
   status: CoinsFeedStatus;
 };
 /**
- * hook to perfom initial GET request and set up Websocket connection
- * @param param0
- * @returns
+ * hook to perfom initial GET request and set up WebSocket connection
  */
 export default function useCoinsFeed({
   monitoredCoinsCount,
@@ -60,7 +57,7 @@ export default function useCoinsFeed({
         const monitoredCoins = getMonitoredCoins(initialCoins, monitoredCoinsCount);
         console.debug(`Monitored coins: ${monitoredCoins.map((coin) => coin.name).join(", ")}`);
 
-        socket = setupWebsocketConnection(monitoredCoins, setCoins, coinUpdateThrottle, highlightDuration);
+        socket = setupWebSocketConnection(monitoredCoins, setCoins, coinUpdateThrottle, highlightDuration);
       })
       .catch((error) => {
         if (controller.signal.aborted) {
@@ -77,7 +74,7 @@ export default function useCoinsFeed({
     };
   }, [coinUpdateThrottle, highlightDuration, monitoredCoinsCount]);
 
-  return { coins, setCoins, status };
+  return { coins, status };
 }
 
 /**
@@ -124,10 +121,10 @@ function getMonitoredCoins(initialCoins: Coin[], monitoredCoinsCount: number): C
 }
 
 /**
- * sets up Websocket connection including cleanup of previous price indicator (flash indicator) after timeout
- * @returns created Websocket connection
+ * sets up WebSocket connection including cleanup of previous price indicator (flash indicator) after timeout
+ * @returns created WebSocket connection
  */
-function setupWebsocketConnection(
+function setupWebSocketConnection(
   monitoredCoins: Coin[],
   setCoins: Dispatch<SetStateAction<Coin[]>>,
   coinUpdateThrottle: number,
