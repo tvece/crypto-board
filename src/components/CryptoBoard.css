@@ -14,7 +14,7 @@
   --cb-red: #660000;
 }
 
-@media screen and (max-width: 800px) {
+@media screen and ((max-width: 800px) or (max-height: 600px)) {
   :root {
     --cb-table-radius: 12px;
   }
@@ -71,7 +71,7 @@
   */
 }
 
-@media screen and (max-width: 800px) {
+@media screen and ((max-width: 800px) or(max-height: 600px)) {
   .cb-search-form-wrapper {
     padding: 0.5em;
   }
@@ -127,7 +127,7 @@
   color: var(--cb-muted);
 }
 
-@media screen and (max-width: 800px) {
+@media screen and ((max-width: 800px) or (max-height: 600px)) {
   .cb-header-cell {
     padding: 0.5em;
   }
@@ -175,7 +175,7 @@
   transition: background-color 400ms ease;
 }
 
-@media screen and (max-width: 800px) {
+@media screen and ((max-width: 800px) or (max-height: 600px)) {
   .cb-body td {
     padding: 0.25em 0.5em;
   }
