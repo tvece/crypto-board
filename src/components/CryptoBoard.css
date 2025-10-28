@@ -61,10 +61,15 @@
   border-radius: var(--cb-table-radius);
   background: var(--cb-cell-background);
   transition: border-color 200ms ease, box-shadow 200ms ease;
-  min-width: fit-content;
-  max-width: 85vw;
   position: sticky;
+  /*
+  * In combination with <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  * this makes the whole scrollbar visible even for zoomed in sizes, 
+  * but then the table does not look good on mobile because it is too wide.
+  * So let's get rid of it in favor of displaying whole table on mobile when the page is opened without the need to zoom.
+  max-width: 85vw;
   left: 5vw;
+  */
 }
 
 @media screen and (max-width: 800px) {
