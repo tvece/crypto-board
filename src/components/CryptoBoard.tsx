@@ -7,11 +7,6 @@ import CoinRow from "./CoinRow";
 import { SearchForm, type FilterFormElement } from "./SearchForm";
 import ColumnHeaderCell from "./ColumnHeaderCell";
 
-/**
- * TODO: check websockets throttle implementation
- * TODO: fix background on mobile
- */
-
 export type ColumnDefinition = {
   /**
    * header text to display in gui
@@ -34,9 +29,9 @@ const columns: ColumnDefinition[] = [
 
 type CryptoBoardProps = CoinsFeedConfig;
 
-export default function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration }: CryptoBoardProps) {
+export default function CryptoBoard({ monitoredCoinsCount, highlightDuration }: CryptoBoardProps) {
   // hooks
-  const { coins, status } = useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration });
+  const { coins, status } = useCoinsFeed({ monitoredCoinsCount, highlightDuration });
 
   const [filter, setFilter] = useState<string | undefined>();
   const inputFilterRef = useRef<HTMLInputElement>(null);

@@ -5,6 +5,9 @@ type CoinRowProps = {
   coin: Coin;
 };
 
+const FLASH_UP_CLASS = "flash-up";
+const FLASH_DOWN_CLASS = "flash-down";
+
 function CoinRow({ coin }: CoinRowProps) {
   return (
     <tr
@@ -12,8 +15,8 @@ function CoinRow({ coin }: CoinRowProps) {
         !coin.previousPriceIndicator
           ? undefined
           : coin.previousPriceIndicator == PREVIOUS_PRICE_INDICATOR.UP
-          ? "flash-up"
-          : "flash-down"
+          ? FLASH_UP_CLASS
+          : FLASH_DOWN_CLASS
       }
     >
       <td data-column-id="market_cap_rank">{coin.market_cap_rank}</td>

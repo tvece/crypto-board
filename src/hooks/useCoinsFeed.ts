@@ -7,11 +7,7 @@ export type CoinsFeedConfig = {
    */
   monitoredCoinsCount: number;
   /**
-   * Minimum interval in milliseconds between two updates of the same coin.
-   */
-  coinUpdateThrottle: number;
-  /**
-   * duration in ms the row stays highlighted after update (do not forget to count in transition)
+   * duration in milliseconds that the row stays highlighted after update (do not forget to count in css transition)
    */
   highlightDuration: number;
 };
@@ -31,11 +27,7 @@ type CoinsFeedResult = {
 /**
  * hook to perfom initial GET request and set up WebSocket connection
  */
-export default function useCoinsFeed({
-  monitoredCoinsCount,
-  coinUpdateThrottle,
-  highlightDuration,
-}: CoinsFeedConfig): CoinsFeedResult {
+export default function useCoinsFeed({ monitoredCoinsCount, highlightDuration }: CoinsFeedConfig): CoinsFeedResult {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [status, setStatus] = useState<CoinsFeedStatus>(COINS_FEED_STATUS.LOADING);
 
@@ -57,7 +49,7 @@ export default function useCoinsFeed({
         const monitoredCoins = getMonitoredCoins(initialCoins, monitoredCoinsCount);
         console.debug(`Monitored coins: ${monitoredCoins.map((coin) => coin.name).join(", ")}`);
 
-        socket = setupWebSocketConnection(monitoredCoins, setCoins, coinUpdateThrottle, highlightDuration);
+        socket = setupWebSocketConnection(monitoredCoins, setCoins, highlightDuration);
       })
       .catch((error) => {
         if (controller.signal.aborted) {
@@ -72,16 +64,19 @@ export default function useCoinsFeed({
         socket.close(1000, "cleanup before next effect run");
       }
     };
-  }, [coinUpdateThrottle, highlightDuration, monitoredCoinsCount]);
+  }, [highlightDuration, monitoredCoinsCount]);
 
   return { coins, status };
 }
+
+const STETH_COIN_SYMBOL = "steth";
 
 /**
  * selects to be monitored coins (by Websocket) with following rules:
  *  skip coins with price exactly 1 (most likely will not change)
  *  skip coins with usd prefix because they are related to american dollar and don't seem to change often
  *  there are coins that share a symbol with another coin - WebSocket connection accepts only symbol so we must skip those
+ *  skip Lido Staked Ether (STETH) coin if present - it does not seem to change often
  *
  * @param initialCoins coins fetched from GET request
  * @param monitoredCoinsCount how many coins to monitor
@@ -89,7 +84,7 @@ export default function useCoinsFeed({
  */
 function getMonitoredCoins(initialCoins: Coin[], monitoredCoinsCount: number): Coin[] {
   const monitoredCoins: Coin[] = [];
-  const bannedSymbols: string[] = [];
+  const bannedSymbols: string[] = [STETH_COIN_SYMBOL];
   const symbolOccurences: Record<string, number> = {};
   initialCoins.map((coin) => {
     if (!symbolOccurences[coin.symbol]) {
@@ -121,13 +116,12 @@ function getMonitoredCoins(initialCoins: Coin[], monitoredCoinsCount: number): C
 }
 
 /**
- * sets up WebSocket connection including cleanup of previous price indicator (flash indicator) after timeout
+ * sets up WebSocket connection including update of coins and cleanup of their previous price indicator (flash indicator) after timeout
  * @returns created WebSocket connection
  */
 function setupWebSocketConnection(
   monitoredCoins: Coin[],
   setCoins: Dispatch<SetStateAction<Coin[]>>,
-  coinUpdateThrottle: number,
   highlightDuration: number
 ): WebSocket {
   const streams = monitoredCoins.map((coin) => `${coin.symbol}usdt@ticker`).join("/");
@@ -137,33 +131,30 @@ function setupWebSocketConnection(
   monitoredCoins.forEach((monitoredCoin) => (lastUpdates[monitoredCoin.symbol] = 0));
   socket.onopen = () => console.log("WebSocket connection established");
   socket.onmessage = (event) => {
-    const now = Date.now();
     const wsCoin = WSCoinSchema.parse(JSON.parse(event.data as string));
     const symbol = wsCoin.s.substring(0, wsCoin.s.length - "usdt".length).toLocaleLowerCase();
-    if (now - lastUpdates[symbol] > coinUpdateThrottle) {
-      setCoins((prev) =>
-        prev.map((coin: Coin) =>
-          coin.symbol === symbol
-            ? {
-                ...coin,
-                current_price: wsCoin.c,
-                previousPriceIndicator:
-                  wsCoin.c > coin.current_price ? PREVIOUS_PRICE_INDICATOR.UP : PREVIOUS_PRICE_INDICATOR.DOWN,
-              }
-            : coin
-        )
-      );
-      lastUpdates[symbol] = now;
-      if (timeouts[symbol]) {
-        clearTimeout(timeouts[symbol]);
-      }
-      timeouts[symbol] = setTimeout(() => {
-        setCoins((prev) =>
-          prev.map((coin: Coin) => (coin.symbol === symbol ? { ...coin, previousPriceIndicator: undefined } : coin))
-        );
-      }, highlightDuration);
+    setCoins((prev) =>
+      prev.map((coin: Coin) =>
+        coin.symbol === symbol
+          ? {
+              ...coin,
+              current_price: wsCoin.c,
+              previousPriceIndicator:
+                wsCoin.c > coin.current_price ? PREVIOUS_PRICE_INDICATOR.UP : PREVIOUS_PRICE_INDICATOR.DOWN,
+            }
+          : coin
+      )
+    );
+    if (timeouts[symbol]) {
+      clearTimeout(timeouts[symbol]);
     }
+    timeouts[symbol] = setTimeout(() => {
+      setCoins((prev) =>
+        prev.map((coin: Coin) => (coin.symbol === symbol ? { ...coin, previousPriceIndicator: undefined } : coin))
+      );
+    }, highlightDuration);
   };
+
   socket.onerror = (err) => {
     console.error("WebSocket error:", err);
   };
