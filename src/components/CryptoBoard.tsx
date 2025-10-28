@@ -11,6 +11,7 @@ import CoinRow from "./CoinRow";
  * TODO: try to fix sticky header on mobile
  * TODO: try to have transition
  * TODO: check websockets throttle implementation
+ * TODO: do not highlight text on double click on cell
  */
 
 interface FilterFormControlsCollection extends HTMLFormControlsCollection {
@@ -20,27 +21,58 @@ interface FilterFormElement extends HTMLFormElement {
   readonly elements: FilterFormControlsCollection;
 }
 
+type ColumnDefinition = {
+  /* header text to display in gui */
+  text: string;
+  /* id of the column */
+  id: string;
+};
+
+const columns: ColumnDefinition[] = [
+  { text: "RANK", id: "market_cap_rank" },
+  { text: "ZKRATKA", id: "symbol" },
+  { text: "NÁZEV", id: "name" },
+  { text: "CENA", id: "current_price" },
+  { text: "ZMĚNA 24h", id: "price_change_percentage_24h" },
+];
+
 type CryptoBoardProps = CoinsFeedConfig;
 
 function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration }: CryptoBoardProps) {
   const { coins, /*setCoins,*/ status } = useCoinsFeed({ monitoredCoinsCount, coinUpdateThrottle, highlightDuration });
 
-  const [isFiltered, setIsFiltered] = useState(false);
+  const [filter, setFilter] = useState<string | undefined>();
   const inputFilterRef = useRef<HTMLInputElement>(null);
+
+  const [isAscendingSort, setIsAscendingSort] = useState(true);
+  const [sortKey, setSortKey] = useState<string>(columns[0].id);
 
   const handleFilter = (event: FormEvent<FilterFormElement>) => {
     event.preventDefault();
     const filterValue = event.currentTarget.elements.filter.value;
-    //setColumnFilters([{ id: "name", value: filterValue }]);
-    setIsFiltered(filterValue.length != 0);
+    setFilter(filterValue.length != 0 ? filterValue : undefined);
   };
 
   const clearFilter = () => {
     if (inputFilterRef.current) {
       inputFilterRef.current.value = "";
     }
-    //setColumnFilters([]);
-    setIsFiltered(false);
+    setFilter(undefined);
+  };
+
+  const columnHeaderClick = (accessorKey: string) => {
+    if (sortKey === accessorKey) {
+      if (isAscendingSort) {
+        setIsAscendingSort(!isAscendingSort);
+      } else {
+        // switch back to default sort
+        setSortKey(columns[0].id);
+        setIsAscendingSort(true);
+      }
+    } else {
+      setSortKey(accessorKey);
+      setIsAscendingSort(true);
+    }
   };
 
   if (status === COINS_FEED_STATUS.ERROR) {
@@ -50,13 +82,13 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
     return <h1 className="global-message">Načítání...</h1>;
   }
 
-  const columns = [
-    { header: "RANK", accessorKey: "market_cap_rank" },
-    { header: "ZKRATKA", accessorKey: "symbol" },
-    { header: "NÁZEV", accessorKey: "name", filterFn: "includesString" },
-    { header: "CENA", accessorKey: "current_price" },
-    { header: "ZMĚNA 24h", accessorKey: "price_change_percentage_24h" },
-  ];
+  /**
+   * sorted and filtered coins
+   */
+  const curatedCoins = coins.filter((coin) => {
+    return filter ? coin.name.toLowerCase().includes(filter) : coin;
+  });
+  //.sort((a, b) => (isAscendingSort ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]));
 
   return (
     <table className="cb">
@@ -72,7 +104,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
                 aria-label="search input"
                 ref={inputFilterRef}
               ></input>
-              {isFiltered ? (
+              {filter ? (
                 <button type="button" className="cb-search-button" title="Zrušit hledání" onClick={clearFilter}>
                   <CrossIcon className="cb-search-icon" />
                 </button>
@@ -88,18 +120,20 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
         <tr className="cb-header">
           {columns.map((column) => {
             return (
-              <th key={column.accessorKey} onClick={() => alert("header cell click")} className="cb-header-cell">
+              <th key={column.id} onClick={() => columnHeaderClick(column.id)} className="cb-header-cell">
                 <span className="cb-header-cell-content">
-                  <span className="cb-header-cell-text">{column.header}</span>
+                  <span className="cb-header-cell-text">{column.text}</span>
 
-                  {/*header.column.getIsSorted() === "asc" ? (
-                    <span className="cb-header-cell-icon">&nbsp;🔼</span>
-                  ) : header.column.getIsSorted() === "desc" ? (
-                    <span className="cb-header-cell-icon">&nbsp;🔽</span>
+                  {sortKey === column.id ? (
+                    isAscendingSort ? (
+                      <span className="cb-header-cell-icon">&nbsp;🔼</span>
+                    ) : (
+                      <span className="cb-header-cell-icon">&nbsp;🔽</span>
+                    )
                   ) : (
-                    \/* invisible span to prevent sort icon increasing column width *\/
+                    /* invisible span to prevent sort icon increasing column width */
                     <span className="cb-header-cell-icon invisible">&nbsp;🔼</span>
-                  )*/}
+                  )}
                 </span>
               </th>
             );
@@ -107,7 +141,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
         </tr>
       </thead>
       <tbody className="cb-body">
-        {coins.length === 0 ? (
+        {curatedCoins.length === 0 ? (
           <tr>
             <td className="no-results" colSpan={columns.length}>
               {/* here we can be sure that no rows available is caused by filter because
@@ -116,7 +150,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
             </td>
           </tr>
         ) : (
-          coins.map((coin) => <CoinRow key={coin.id} coin={coin} />)
+          curatedCoins.map((coin) => <CoinRow key={coin.id} coin={coin} />)
         )}
       </tbody>
     </table>
