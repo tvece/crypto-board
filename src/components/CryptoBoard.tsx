@@ -10,7 +10,7 @@ import ColumnHeaderCell from "./ColumnHeaderCell";
 /**
  * TODO: try to have transition
  * TODO: check websockets throttle implementation
- * TODO: scroll to top when scroll changes
+ * TODO: do lowercase compare
  */
 
 export type ColumnDefinition = {
@@ -56,8 +56,14 @@ export default function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, h
 
   // events
 
+  const scrollToTop = () => {
+    // this will have to be adjusted if CryptoBoard will not be the only element on the page
+    window.scroll({ top: 0, behavior: "smooth" });
+  };
+
   const handleFilter = (event: FormEvent<FilterFormElement>) => {
     event.preventDefault();
+    scrollToTop();
     const filterValue = event.currentTarget.elements.filter.value;
     setFilter(filterValue.length != 0 ? filterValue : undefined);
   };
@@ -66,6 +72,7 @@ export default function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, h
     if (inputFilterRef.current) {
       inputFilterRef.current.value = "";
     }
+    scrollToTop();
     setFilter(undefined);
   };
 
@@ -73,6 +80,7 @@ export default function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, h
    * change sort on header cell click
    */
   const columnHeaderCellClick = (accessorKey: string) => {
+    scrollToTop();
     if (sortKey === accessorKey) {
       if (isAscendingSort) {
         setIsAscendingSort(!isAscendingSort);
