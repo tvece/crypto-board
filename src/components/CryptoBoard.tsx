@@ -4,7 +4,6 @@ import { useRef, useState, type FormEvent } from "react";
 import CrossIcon from "../icons/cross.svg?react";
 import SearchIcon from "../icons/search.svg?react";
 import useCoinsFeed, { COINS_FEED_STATUS, type CoinsFeedConfig } from "../hooks/useCoinsFeed";
-import { PREVIOUS_PRICE_INDICATOR } from "../models/Coins";
 import CoinRow from "./CoinRow";
 
 /**
@@ -117,19 +116,7 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
             </td>
           </tr>
         ) : (
-          coins.map((coin) => (
-            <CoinRow
-              key={coin.id}
-              coin={coin}
-              className={
-                !coin.previousPriceIndicator
-                  ? undefined
-                  : coin.previousPriceIndicator == PREVIOUS_PRICE_INDICATOR.UP
-                  ? "flash-up"
-                  : "flash-down"
-              }
-            />
-          ))
+          coins.map((coin) => <CoinRow key={coin.id} coin={coin} />)
         )}
       </tbody>
     </table>

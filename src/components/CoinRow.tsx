@@ -1,14 +1,21 @@
 import { memo } from "react";
-import type { Coin } from "../models/Coins";
+import { PREVIOUS_PRICE_INDICATOR, type Coin } from "../models/Coins";
 
 type CoinRowProps = {
   coin: Coin;
-  className?: string;
 };
 
-function CoinRow({ className, coin }: CoinRowProps) {
+function CoinRow({ coin }: CoinRowProps) {
   return (
-    <tr className={className}>
+    <tr
+      className={
+        !coin.previousPriceIndicator
+          ? undefined
+          : coin.previousPriceIndicator == PREVIOUS_PRICE_INDICATOR.UP
+          ? "flash-up"
+          : "flash-down"
+      }
+    >
       <td>{coin.market_cap_rank}</td>
       <td>{coin.symbol}</td>
       <td>{coin.name}</td>
