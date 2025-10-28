@@ -61,6 +61,7 @@
   border-radius: var(--cb-table-radius);
   background: var(--cb-cell-background);
   transition: border-color 200ms ease, box-shadow 200ms ease;
+  min-width: fit-content;
   max-width: 85vw;
   position: sticky;
   left: 5vw;
