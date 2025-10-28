@@ -11,7 +11,6 @@ import ColumnHeaderCell from "./ColumnHeaderCell";
  * TODO: try to fix sticky header on mobile
  * TODO: try to have transition
  * TODO: check websockets throttle implementation
- * TODO: do not highlight text on double click on cell header
  */
 
 export type ColumnDefinition = {
@@ -109,6 +108,7 @@ export default function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, h
           {columns.map((column) => {
             return (
               <ColumnHeaderCell
+                key={column.id}
                 column={column}
                 columnHeaderCellClick={columnHeaderCellClick}
                 isSortedBy={sortKey === column.id}

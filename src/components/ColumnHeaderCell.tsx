@@ -14,7 +14,7 @@ export default function ColumnHeaderCell({
   isAscendingSort,
 }: ColumnHeaderCellProps) {
   return (
-    <th key={column.id} onClick={() => columnHeaderCellClick(column.id)} className="cb-header-cell">
+    <th onClick={() => columnHeaderCellClick(column.id)} className="cb-header-cell">
       <span className="cb-header-cell-content">
         <span className="cb-header-cell-text">{column.text}</span>
 

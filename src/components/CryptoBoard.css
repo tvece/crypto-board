@@ -134,6 +134,10 @@
 
 .cb-header-cell {
   cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .cb-header-cell-content {
