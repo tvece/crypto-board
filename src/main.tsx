@@ -7,7 +7,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <CryptoBoard
       monitoredCoinsCount={5}
-      coinUpdateThrottle={1000}
+      coinUpdateThrottle={2000}
       // 500 + transition
       highlightDuration={900}
     />
