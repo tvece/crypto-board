@@ -31,6 +31,7 @@
 .cb {
   border-spacing: 0;
   margin: 1em;
+  height: 0;
   width: 90%;
   max-width: 1200px;
   color: var(--cb-text);
