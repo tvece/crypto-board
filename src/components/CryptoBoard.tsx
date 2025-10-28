@@ -10,6 +10,7 @@ import ColumnHeaderCell from "./ColumnHeaderCell";
 /**
  * TODO: try to have transition
  * TODO: check websockets throttle implementation
+ * TODO: scroll to top when scroll changes
  */
 
 export type ColumnDefinition = {
