@@ -52,8 +52,6 @@
   padding: 1.5em;
   background: var(--cb-cell-background-dark);
   border-radius: var(--cb-table-radius) var(--cb-table-radius) 0 0;
-  position: sticky;
-  top: 1px;
 }
 
 .cb-search-form {
