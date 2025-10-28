@@ -8,7 +8,6 @@ import { SearchForm, type FilterFormElement } from "./SearchForm";
 import ColumnHeaderCell from "./ColumnHeaderCell";
 
 /**
- * TODO: try to fix sticky header on mobile
  * TODO: try to have transition
  * TODO: check websockets throttle implementation
  */
