@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import CrossIcon from "../icons/cross.svg?react";
 import SearchIcon from "../icons/search.svg?react";
 import useCoinsFeed, { COINS_FEED_STATUS, type CoinsFeedConfig } from "../hooks/useCoinsFeed";
+import { type Coin } from "../models/Coins";
 import CoinRow from "./CoinRow";
 
 /**
@@ -85,10 +86,31 @@ function CryptoBoard({ monitoredCoinsCount, coinUpdateThrottle, highlightDuratio
   /**
    * sorted and filtered coins
    */
-  const curatedCoins = coins.filter((coin) => {
-    return filter ? coin.name.toLowerCase().includes(filter) : coin;
-  });
-  //.sort((a, b) => (isAscendingSort ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]));
+  const curatedCoins = coins
+    .filter((coin) => {
+      return filter ? coin.name.toLowerCase().includes(filter) : coin;
+    })
+    .sort((a, b) => {
+      const aValue = a[sortKey as keyof Coin];
+      const bValue = b[sortKey as keyof Coin];
+
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return isAscendingSort ? aValue - bValue : bValue - aValue;
+      }
+
+      const aString = String(aValue);
+      const bString = String(bValue);
+
+      if (aString === bString) {
+        return 0;
+      }
+
+      if (isAscendingSort) {
+        return aString < bString ? -1 : 1;
+      }
+
+      return aString > bString ? -1 : 1;
+    });
 
   return (
     <table className="cb">
