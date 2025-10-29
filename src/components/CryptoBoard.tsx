@@ -148,7 +148,7 @@ function getCuratedCoins(
 ): Coin[] {
   return allCoins
     .filter((coin) => {
-      return filter ? coin.name.toLowerCase().includes(filter) : coin;
+      return filter ? coin.name.toLowerCase().includes(filter.toLocaleLowerCase()) : coin;
     })
     .sort((a, b) => {
       const aValue = a[sortKey as keyof Coin];
